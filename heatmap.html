@@ -224,14 +224,16 @@
 
     d3.json("risks.json", function(error, jsondata) {
 
-        var riskLevels = [
-            {name: 'maximum',  color: '#0078BD'},
-            {name: 'high',  color: '#0078BD'},
+        var riskColors = [
+            {name: 'maximum',  color: '#FF0000'},
+            {name: 'high',  color: '#A40802'},
             {name: 'medium',  color: '#00C2E0'},
-            {name: 'low',  color: '#51E898'},
-            {name: 'none',  color: '#4D4D4D'},
+            {name: 'low',  color: '#ADD8C7'},
+            {name: 'none',  color: '#FFFFFF'},
+            {name: 'unknown',  color: '#FFFFFF'},
         ];
-        var riskscores= [];
+        var riskLabels =[];
+        var riskScores= [];
         var risks=[];
         var developers=[];
         var operators=[];
@@ -312,19 +314,6 @@
             d3.select("#threatLayer").select("*").remove();
         }
 
-        // given an object, recurse it and
-        // return a list of its key/value pairs
-        listFlatten = function(x, result, prefix) {
-          if(_.isObject(x)) {
-            _.each(x, function(v, k) {
-              listFlatten(v, result,  k)
-            })
-          } else {
-            result.push({key:prefix,value: x})
-          }
-          return result
-        }
-
         function toDegrees(rad) {
             return rad * (180/Math.PI);
         }
@@ -334,13 +323,14 @@
         function panToObject(obj) {
             clearInfoPanel();
             hideInfoPanel();
-            
+            //rotate the camera when it stops to slighty ahead and slightly looking down 
             var rotateTween = new TWEEN.Tween( controls.target )
                 .to( { x: obj.position.x, y: obj.position.y-100, z: obj.position.z-50 }, 2000 )
                 .interpolation(TWEEN.Interpolation.CatmullRom)
                 .easing( TWEEN.Easing.Quintic.InOut )
                 .start();
 
+            //move the camera to slight in front of the object.
             var goTween = new TWEEN.Tween( camera.position )
                 .to( { x: obj.position.x, y: obj.position.y, z: obj.position.z + 10 }, 2000 )
                 .interpolation(TWEEN.Interpolation.CatmullRom)
@@ -370,16 +360,16 @@
         //and set colors for each record.
         data.forEach(function(d, i) {
             var templateColor = d3.hcl(color(i));
-            if (d.score >= 70) {
-                //templateColor=templateColor.brighter(d.score/100)
-                redness=templateColor.rgb().r;
-                redness=d3.min([d.score*redness/70,255]);
-                templateColor=d3.rgb(redness,templateColor.rgb().g,templateColor.rgb().b);
-            }else{
-                templateColor=templateColor.darker(d.score/70);
-            }
-            if ( riskscores.indexOf(d.score )==-1) {
-                riskscores.push(d.score);
+            //if (d.score >= 70) {
+            //    //templateColor=templateColor.brighter(d.score/100)
+            //    redness=templateColor.rgb().r;
+            //    redness=d3.min([d.score*redness/70,255]);
+            //    templateColor=d3.rgb(redness,templateColor.rgb().g,templateColor.rgb().b);
+            //}else{
+            //    templateColor=templateColor.darker(d.score/70);
+            //}
+            if ( riskScores.indexOf(d.score )==-1) {
+                riskScores.push(d.score);
             }
             if ( developers.indexOf(d.record.rra.rra_details.details.metadata.developer) ==-1) {
                 developers.push(d.record.rra.rra_details.details.metadata.developer);
@@ -387,27 +377,40 @@
             }
             if ( operators.indexOf(d.record.rra.rra_details.details.metadata.operator) ==-1) {
                 operators.push(d.record.rra.rra_details.details.metadata.operator);
-                console.log('adding ' + d.record.rra.rra_details.details.metadata.operator )
+                //console.log('adding ' + d.record.rra.rra_details.details.metadata.operator )
             }
             if ( owners.indexOf(d.record.rra.rra_details.details.metadata.owner) ==-1) {
                 owners.push(d.record.rra.rra_details.details.metadata.owner);
-                console.log('adding ' + d.record.rra.rra_details.details.metadata.owner )
+                //console.log('adding ' + d.record.rra.rra_details.details.metadata.owner )
+            }
+            if ( riskLabels.indexOf(d.record.normalized_label) ==-1) {
+                riskLabels.push(d.record.normalized_label);
+                console.log('adding ' + d.record.normalized_label );
             }                 
+            
+            
             return d.template_color=templateColor;
+            //return d.template_color= _.findWhere(riskColors, {name:d.record.normalized_label}).color;
           //return d.template_color = d3.hcl(color(i)).brighter(d.score);
         });
 
         //debug
-        //window.riskscores=riskscores;
+        //window.riskScores=riskScores;
         //window.developers=developers;
         //window.operators=operators;
         //window.owners=owners;
         //with the list of risk scores in the data,
         //setup a d3 scale to size the boxes on the heatmap accordingly.
         riskScale=d3.scale.linear()
-            .domain([d3.min(riskscores),d3.max(riskscores)])
+            .domain([d3.min(riskScores),d3.max(riskScores)])
             .range([.5,10])
+            
+        redness = d3.scale.linear()
+            .domain([d3.min(riskScores),d3.max(riskScores)])
+            .rangeRound([0, 255]);
 
+        window.redness=redness;
+        window.riskScores=riskScores;
         // Cubes/sizes
         var boxWidth = 75;
         var boxHeight = 50;
@@ -479,8 +482,13 @@
         //for each item, make a box and put it on the grid
         data.forEach(function(d,i){
             //var material = new THREE.MeshLambertMaterial( { color: 0x5db3de, overdraw: 0.5 } );
-            var material = new THREE.MeshPhongMaterial( { color: d.template_color.toString(),
-                                                            opacity: .8,
+            thisColor=d3.hcl(d.template_color);
+            //scaleColor=d3.rgb(redness(d.score),redness(d.score),redness(d.score));
+            scaleColor=d3.rgb(redness(d.score),thisColor.rgb().g,thisColor.rgb().b);
+            //scaleColor=d3.rgb(redness(d.score),120,1);
+            //console.log(scaleColor.toString(), redness(d.score));
+            var material = new THREE.MeshPhongMaterial( { color: scaleColor.toString(),
+                                                            opacity: .7,
                                                             transparent: true,
                                                             shading: THREE.SmoothShading
                                                             } );

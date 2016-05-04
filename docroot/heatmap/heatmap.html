@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta content="text/html" http-equiv="Content-Type">
+    <meta content="utf-8" http-equiv="encoding">
+    <style type="text/css">
+        html, body {
+            margin:0;
+            padding:0;
+            overflow:hidden;
+            background-color: #f0f0f0;
+            font-family: sans-serif;
+        }
+
+        .labelold {
+            font-family:  Impact;
+            text-shadow: 0 0 1px rgba(0,255,255,0.95);
+        }
+
+        .label {
+            font: 10px/1.2 Impact;
+            width: 7em;  /* 80 x 0.6 (the width/height ratio of Courier) */
+            overflow: hidden;
+            text-align: center;
+            text-shadow: 0 0 1px rgba(0,255,255,0.95);
+        }
+
+        /* easy transition timings 200/400 miliseconds */
+        .tran4 {
+            -o-transition: all 400ms;
+            -moz-transition: all 400ms;
+            -webkit-transition: all 400ms;
+        }
+
+        .tran2 {
+            -o-transition: all 200ms;
+            -moz-transition: all 200ms;
+            -webkit-transition: all 200ms;
+        }
+
+        /*upper case the first letter*/
+        .firstUpper:first-letter {
+            text-transform: uppercase
+        }
+
+        /* http://www.sitepoint.com/css3-sliding-menu/ */
+        leftnav {
+            position: fixed;
+            left: -17em;
+            top: 0;
+            bottom: 0;
+            /*background-color: #654;*/
+            background-color: #444444;
+            border-right: 15px solid #765;
+            box-shadow: 4px 0 5px rgba(0,0,0,0.2);
+            z-index: 1;
+            text-align: left;
+            font-weight: bolder;
+            display: inline-block;
+            height: 100%;
+            margin: 0em;
+            line-height: normal;
+        }
+
+        /*pull out triangle*/
+        leftnav:after {
+            position: absolute;
+            content: ' ';
+            width: 0;
+            height: 0;
+            right: -75px;
+            top: 50%;
+            border-width: 30px 30px;
+            border-style: solid;
+            border-color: transparent transparent transparent #765;
+        }
+
+        leftnav ul {
+            width: 14em;
+            list-style-type: none;
+            margin: auto;
+            padding: 1em;
+        }
+
+        leftnav div {
+            margin:auto;
+        }
+
+        leftnav:hover {
+            left: 0;
+        }
+
+        leftnav .filters-col .row {
+            margin-top: 45px;
+            padding: 0 0.5em;
+        }
+
+        leftnav .reset-filter {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        leftnav {
+            -webkit-transition: all 400ms ease;
+            -moz-transition: all 400ms ease;
+            -ms-transition: all 400ms ease;
+            -o-transition: all 400ms ease;
+            transition: all 400ms ease;
+        }
+
+        #rightpanel {
+            position: fixed;
+            width: 480px;
+            top: 0;
+            bottom: 0;
+            height:100%;
+            right:-520px;
+            box-shadow: 0px 0px 15px black;
+            background: white;
+            padding: 2px;
+            outline: 0;
+            display: inline-block;
+            z-index: 1;
+
+            -webkit-transition: all 400ms ease;
+            -moz-transition: all 400ms ease;
+            -ms-transition: all 400ms ease;
+            -o-transition: all 400ms ease;
+            transition: all 400ms ease;
+        }
+
+        #rightpanel.on {
+            right: 0px;
+        }
+
+        #rightPanelClose {
+            text-align: right;
+        }
+
+        /* right panel accordian */
+
+        .serviceName {
+            text-transform: uppercase;
+        }
+        h3, ul {
+            margin:0;
+            padding:0;
+            list-style:none;
+        }
+        h3{
+            background: #bbb;
+            color:#fff;
+            padding:2px;
+            border:1px groove;
+            border-radius:2px 2px 0 0;
+            text-shadow:1px 1px 1px rgba(1,0,0,0.25);
+        }
+        li div {
+            padding:0;
+            height:0;
+            background:#eee;
+            overflow:hidden;
+            -webkit-transition:all 0.5s ease;
+            -moz-transition:all 0.5s ease;
+            -ms-transition:all 0.5s ease;
+            -o-transition:all 0.5s ease;
+            transition:all 0.5s ease;
+        }
+        /*height of the right panel detail space */
+        li h3:hover + div, li div:hover {
+            height:200px;
+        }
+    </style>
+
+    <script src="underscore-min.js"></script>
+    <script src="d3.min.js"></script>
+    <script src="three.min.js"></script>
+    <script src="OrbitControls.js"></script>
+    <script src="CSS3DRenderer.js"></script>
+    <script src="Tween.js"></script>
+
+</head>
+<body>
+    <leftnav>
+        <div>
+            <ul>
+                <li>a filtering thing here</li>
+                <li>another filtering thing here</li>
+                <li><button id="toggle" type="button" class="btn btn-default">Toggle Info Panel</button></li>
+            </ul>
+        </div>
+    </leftnav>
+    <div id="rightpanel">
+        <div id="rightPanelClose"><a onclick="hideInfoPanel()" href="#">X</a></div>
+        <div id="riskitems">
+            <p id="serviceName" class="serviceName"></p>
+            <ul>
+                <li>
+                    <h3>RRA Data</h3>
+                    <div id="rraLayer"></div>
+                </li>
+                <li>
+                    <h3>Web Compliance</h3>
+                    <div id="webLayer"></div>
+                </li>
+                <li>
+                    <h3>OS</h3>
+                    <div id="osLayer"></div>
+                </li>
+                <li>
+                    <h3>OS Vulnerabiliies</h3>
+                    <div id="osVulnerabilities"></div>
+                </li>
+                <li>
+                    <h3>Platform</h3>
+                    <div id="platformLayer"></div>
+                </li>
+                <li>
+                    <h3>Threats</h3>
+                    <div id="threatLayer"></div>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <div id="container"></div>
+</body>
+<script>
+
+    d3.json("risks.json", function(error, jsondata) {
+
+        var riskColors = [
+            {name: 'maximum',  color: '#FF0000'},
+            {name: 'high',  color: '#A40802'},
+            {name: 'medium',  color: '#00C2E0'},
+            {name: 'low',  color: '#ADD8C7'},
+            {name: 'none',  color: '#FFFFFF'},
+            {name: 'unknown',  color: '#FFFFFF'},
+        ];
+        var riskLabels =[];
+        var riskScores= [];
+        var risks=[];
+        var developers=[];
+        var operators=[];
+        var owners=[];
+        //get the list of risks returned.
+        risks= jsondata.risks;
+
+        var camera, renderer, controls;
+        var width = window.innerWidth, height = window.innerHeight;
+        var container = d3.select('#container').node();
+        var body=d3.select('body');
+
+
+        //set up the scene components
+        camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 3000 );
+        camera.position.x = 750;
+        camera.position.y = 450;
+        camera.position.z = 750;
+
+        //add  controls
+        controls = new THREE.OrbitControls( camera );
+
+        controls.rotateSpeed = .5;
+        controls.zoomSpeed = .5;
+        controls.panSpeed = 0.1;
+        controls.enableKeys=false;
+
+        //controls.noZoom = false;
+        //controls.noPan = false;
+        //controls.staticMoving = false;
+        //controls.dynamicDampingFactor = 0.3;
+
+    //            controls.keys = [ 65, 83, 68 ];
+
+        controls.addEventListener( 'change', render );
+        //debug
+        //window.controls=controls;
+        //window.camera = camera;
+
+        //create the scene
+        scene = new THREE.Scene();
+
+        //track mouse clicks
+        raycaster = new THREE.Raycaster();
+        mouse = new THREE.Vector2();
+
+        //utility functions
+        getFirstWord = function (str) {
+                if (str.indexOf(' ') === -1)
+                    return str;
+                else {
+                    words=str.split(/\s+/)
+                    return _.first(words,5).join(' ');
+                }
+            };
+
+        toggleInfoPanel = function() {
+                //toggle the right info panel
+                var isActive = d3.select("#rightpanel").classed("on");
+                d3.select("#rightpanel").classed("on",!isActive);
+        }
+
+        hideInfoPanel = function() {
+                d3.select("#rightpanel").classed("on",false);
+        }
+
+        showInfoPanel = function() {
+                d3.select("#rightpanel").classed("on",true);
+        }
+
+        clearInfoPanel = function() {
+            d3.select("#serviceName").node().innerText="";
+            d3.select("#rraLayer").select("*").remove();
+            d3.select("#webLayer").select("*").remove();
+            d3.select("#osLayer").select("*").remove();
+            d3.select("#osVulnerabilities").select("*").remove();
+            d3.select("#platformLayer").select("*").remove();
+            d3.select("#threatLayer").select("*").remove();
+        }
+
+        function toDegrees(rad) {
+            return rad * (180/Math.PI);
+        }
+
+        //function to move the camera towards a specific object in a cool pan
+        //http://stackoverflow.com/a/20558135
+        function panToObject(obj) {
+            clearInfoPanel();
+            hideInfoPanel();
+            //rotate the camera when it stops to slighty ahead and slightly looking down
+            var rotateTween = new TWEEN.Tween( controls.target )
+                .to( { x: obj.position.x, y: obj.position.y-100, z: obj.position.z-50 }, 2000 )
+                .interpolation(TWEEN.Interpolation.CatmullRom)
+                .easing( TWEEN.Easing.Quintic.InOut )
+                .start();
+
+            //move the camera to slight in front of the object.
+            var goTween = new TWEEN.Tween( camera.position )
+                .to( { x: obj.position.x, y: obj.position.y, z: obj.position.z + 10 }, 2000 )
+                .interpolation(TWEEN.Interpolation.CatmullRom)
+                .easing(TWEEN.Easing.Quintic.InOut)
+                .onComplete(function(){showInfoPanel()})
+                .start();
+        }
+
+
+        //walk the data we got (risks) and setup color ranges, map key elements, etc
+        color = d3.scale.category20c();
+        data = _.map(risks,function(risk) {
+          return {
+            name: risk.rra.name,
+            record: risk,
+            score: Number(Number(risk.score).toFixed()),
+            label: risk.normalized_label
+          };
+        });
+
+        //sort the data by risk score
+        data=_.sortBy(data, 'score');
+        //debug select top X records.
+        //data=_.first(data,150);
+
+        //setup the range of risk scores, owners, operators, developers
+        //and set colors for each record.
+        data.forEach(function(d, i) {
+            var templateColor = d3.hcl(color(i));
+            //if (d.score >= 70) {
+            //    //templateColor=templateColor.brighter(d.score/100)
+            //    redness=templateColor.rgb().r;
+            //    redness=d3.min([d.score*redness/70,255]);
+            //    templateColor=d3.rgb(redness,templateColor.rgb().g,templateColor.rgb().b);
+            //}else{
+            //    templateColor=templateColor.darker(d.score/70);
+            //}
+            if ( riskScores.indexOf(d.score )==-1) {
+                riskScores.push(d.score);
+            }
+            if ( developers.indexOf(d.record.rra.rra_details.details.metadata.developer) ==-1) {
+                developers.push(d.record.rra.rra_details.details.metadata.developer);
+                //console.log('adding ' + d.record.rra.rra_details.details.metadata.developer )
+            }
+            if ( operators.indexOf(d.record.rra.rra_details.details.metadata.operator) ==-1) {
+                operators.push(d.record.rra.rra_details.details.metadata.operator);
+                //console.log('adding ' + d.record.rra.rra_details.details.metadata.operator )
+            }
+            if ( owners.indexOf(d.record.rra.rra_details.details.metadata.owner) ==-1) {
+                owners.push(d.record.rra.rra_details.details.metadata.owner);
+                //console.log('adding ' + d.record.rra.rra_details.details.metadata.owner )
+            }
+            if ( riskLabels.indexOf(d.record.normalized_label) ==-1) {
+                riskLabels.push(d.record.normalized_label);
+                console.log('adding ' + d.record.normalized_label );
+            }
+
+
+            return d.template_color=templateColor;
+            //return d.template_color= _.findWhere(riskColors, {name:d.record.normalized_label}).color;
+          //return d.template_color = d3.hcl(color(i)).brighter(d.score);
+        });
+
+        //debug
+        //window.riskScores=riskScores;
+        //window.developers=developers;
+        //window.operators=operators;
+        //window.owners=owners;
+        //with the list of risk scores in the data,
+        //setup a d3 scale to size the boxes on the heatmap accordingly.
+        riskScale=d3.scale.linear()
+            .domain([d3.min(riskScores),d3.max(riskScores)])
+            .range([.5,10])
+
+        redness = d3.scale.linear()
+            .domain([d3.min(riskScores),d3.max(riskScores)])
+            .rangeRound([0, 255]);
+
+        window.redness=redness;
+        window.riskScores=riskScores;
+        // Cubes/sizes
+        var boxWidth = 75;
+        var boxHeight = 50;
+        var boxDepth = 60;
+        var gridSize = 500;
+        var squareSize = 75;
+
+        //grid
+        var grid = new THREE.GridHelper( gridSize, squareSize );
+        grid.setColors( 0x0000ff, 0x808080 );
+        //grid.position.y = - 15;
+        scene.add( grid );
+
+        //calc the positions on the grid in order of closest to farthest
+        //for assigning boxes by their risk
+        var gridPositions=[];
+        var quadrant=1;
+        // q1 x=10, z=10
+        // q2 x=-9, z=10
+        // q3 x=-9, z=-9
+        // q4 x=10, z=-9
+        //order the positions we will place the boxes
+        // 10 to -9
+        // 10 to -9
+        //maxZ- lastX-1 = startPos
+        //step through maxX-minX
+        //set lastX==current column
+        //decrease z until it equals lastX-1
+        //increase x until it reaches maxX
+        //next step
+        //          1    3          5                7                      9                    11                        13
+        xpositions=[10,  9, 9, 10,  8, 8, 8, 9, 10,  7, 7, 7, 7, 8, 9, 10,  6,6,6,6,6,7,8,9,10,  5,5,5,5,5,5,6,7,8,9,10 ,  4,4,4,4,4,4,4,5,6,7,8,9,10]
+        zpositions=[10, 10, 9, 9,  10, 9, 8, 8, 8,  10, 9, 8, 7, 7, 7,  7,  10,9,8,7,6,6,6,6,6, 10,9,8,7,6,5,5,5,5,5, 5 , 10,9,8,7,6,5,4,4,4,4,4,4,4]
+        var maxZ = gridSize/squareSize;
+        var maxX = gridSize/squareSize;
+        var lastX = maxX-1;
+        var lastZ = maxZ;
+        //console.log(maxZ,maxX,lastX,lastZ);
+        //add the starting point
+        gridPositions.push({x:maxX,z:maxZ});
+        for (var i = maxX-1; i > maxX*-1; i--) {
+           //console.log(i)
+           lastX=i;
+
+            for (var z=lastZ;z >lastX-1;z--){
+                //console.log('in maxZ');
+                var position={}
+                position.x=i;
+                position.z=z;
+                gridPositions.push(position);
+            }
+           for (var x=lastX;x <=maxX;x++){
+                //console.log('in maxX');
+                var position={}
+                position.x=x;
+                position.z=z;
+                gridPositions.push(position);
+            }
+
+            lastX--;
+        }
+        //debug
+        //window.gridPositions=gridPositions;
+
+        //make the basic box
+        var geometry = new THREE.BoxGeometry( boxWidth, boxHeight, boxDepth );
+        //var material = new THREE.MeshLambertMaterial( { color: 0xffffff, shading: THREE.FlatShading, overdraw: 0.5 } );
+
+        //for each item, make a box and put it on the grid
+        data.forEach(function(d,i){
+            //var material = new THREE.MeshLambertMaterial( { color: 0x5db3de, overdraw: 0.5 } );
+            thisColor=d3.hcl(d.template_color);
+            //scaleColor=d3.rgb(redness(d.score),redness(d.score),redness(d.score));
+            scaleColor=d3.rgb(redness(d.score),thisColor.rgb().g,thisColor.rgb().b);
+            //scaleColor=d3.rgb(redness(d.score),120,1);
+            //console.log(scaleColor.toString(), redness(d.score));
+            var material = new THREE.MeshPhongMaterial( { color: scaleColor.toString(),
+                                                            opacity: .7,
+                                                            transparent: true,
+                                                            shading: THREE.SmoothShading
+                                                            } );
+            var cube = new THREE.Mesh(geometry,material);
+            cube.record=d.record;
+            cube.scale.y = riskScale(d.score);
+            cube.position.y = (cube.scale.y * boxHeight)/2 ;
+            cube.position.x = (gridPositions[i].x * squareSize) - boxWidth/2;
+            cube.position.z = (gridPositions[i].z * squareSize) - boxDepth/2;
+
+            //add a plain css element for the label/name of the box.
+            var cubeLabel = document.createElement('div');
+            cubeLabel.className='label';
+            cubeLabel.textContent=getFirstWord(d.name);
+            //cubeLabel.title=d.record._source.details.metadata.service + ' ' + _.pairs(d.counts).toString() + ' total score: ' + d.score + ' area ' + d.area;
+
+            //position the label
+            //var label = new THREE.CSS3DObject(labelDIV.node());
+            var label = new THREE.CSS3DObject(cubeLabel);
+            label.position.copy(cube.position);
+            label.position.y=cube.scale.y*boxHeight
+            //label.position.x=cube.position.x + (boxWidth - (boxWidth/2));
+            //label.rotateZ(THREE.Math.degToRad(45));
+            label.rotateX(THREE.Math.degToRad(-90));
+
+            scene.add(cube);
+            scene.add(label);
+
+        });
+        //publish objects to the console for debugging
+        //window.data = data;
+
+        // Lights
+
+        var ambientLight = new THREE.AmbientLight( 0x404040);
+        scene.add( ambientLight );
+        var light = new THREE.HemisphereLight( 0xffffbb, 0x080820, .5 );
+        scene.add( light );
+        var directionalLight = new THREE.DirectionalLight( 0xffffff, 0.5 );
+        directionalLight.position.set( 0, 1, 0 );
+        scene.add( directionalLight );
+
+        //renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer = new THREE.WebGLRenderer( { alpha: true ,
+                                              precision: 'highp',
+                                              premultipliedAlpha: false,
+                                              antialias: true,
+                                              stencil: false,
+                                              preserveDrawingBuffer: false,
+                                              depth: true
+                                              });
+        renderer.setClearColor( 0xf0f0f0 );
+        renderer.setPixelRatio( window.devicePixelRatio );
+        renderer.setSize( window.innerWidth, window.innerHeight );
+        container.appendChild( renderer.domElement );
+
+        //css renderer for non webgl elements
+        cssRenderer = new THREE.CSS3DRenderer();
+        cssRenderer.setSize(window.innerWidth,window.innerHeight);
+        cssRenderer.domElement.style.position = 'absolute';
+        cssRenderer.domElement.style.top = 0;
+        container.appendChild( cssRenderer.domElement )
+
+        function onWindowResize() {
+
+            camera.left = window.innerWidth / - 2;
+            camera.right = window.innerWidth / 2;
+            camera.top = window.innerHeight / 2;
+            camera.bottom = window.innerHeight / - 2;
+
+            camera.updateProjectionMatrix();
+
+            renderer.setSize( window.innerWidth, window.innerHeight );
+            cssRenderer.setSize( window.innerWidth, window.innerHeight );
+
+        }
+
+        function animate() {
+
+            requestAnimationFrame( animate );
+            controls.update();
+            render();
+
+        }
+
+        function render() {
+
+            TWEEN.update();
+            renderer.render( scene, camera );
+            cssRenderer.render(scene,camera);
+
+        }
+
+        function onMouseDblClick( event ) {
+                event.preventDefault();
+                mouse.x = ( event.clientX / renderer.domElement.clientWidth ) * 2 - 1;
+                mouse.y = - ( event.clientY / renderer.domElement.clientHeight ) * 2 + 1;
+
+                raycaster.setFromCamera( mouse, camera );
+
+                var intersects = raycaster.intersectObjects( scene.children );
+
+                if ( intersects.length > 0 ) {
+                    target=intersects[0].object;
+                    //debug
+                    //window.target=target;
+
+                    //visual for selection
+                    target.material.color.setHex( Math.random() * 0xffffff );
+
+                    //pick a spot for the camera to pan into
+                    targetCamera = target.position.clone();
+                    targetCamera.setY(2 * boxHeight + target.scale.y * boxHeight);
+                    targetCamera.setZ(target.position.z + boxDepth);
+
+
+                    //make an invisible scene target for the camera
+                    var hitgeometry = new THREE.BoxGeometry( 0, 0, 0 );
+                    var hitmaterial = new THREE.MeshPhongMaterial( { color: 0x0000,
+                                                                    opacity: .001,
+                                                                    transparent: true,
+                                                                    shading: THREE.SmoothShading
+                                                                    } );
+                    var particle = new THREE.Mesh(hitgeometry,hitmaterial);
+                    particle.position.copy(targetCamera)
+                    particle.scale.x = particle.scale.y = 1;
+                    //particle.rotateOnAxis(new THREE.Vector3(0,1,0), -.70)
+                    scene.add( particle );
+                    panToObject(particle);
+
+                    clearInfoPanel();
+                    //fill the info panel with this service's data
+                    d3.select("#serviceName").node().innerText=target.record.rra.name;
+                    d3.select("#rraLayer")
+                    .append("ul")
+                    .classed('rraLayerList', true)
+                    .append("li")
+                    .html("Data: " + target.record.rra.default_data_classification)
+                    .append("li")
+                    .html('<a target="_blank" href="https://docs.google.com/spreadsheets/d/' +target.record.rra.rra_details.source + '">' + "RRA Doc</a>");
+
+                    _.pairs(target.record.rra.rra_details.details.metadata).forEach(function(d,i){
+
+                        if (d[1].length>0) {
+                            d3.select(".rraLayerList")
+                            .append("li")
+                            .classed('firstUpper',true)
+                            .text(d[0] + ": " + d[1])
+
+                        }
+                    });
+                }
+            }
+
+        //add our event listeners
+        window.addEventListener( 'resize', onWindowResize, false );
+        document.addEventListener( 'dblclick', onMouseDblClick, false );
+        document.onkeydown = function(evt) {
+            evt = evt || window.event;
+            if (evt.keyCode == 27 || evt.keyCode == 32 ) {
+                //reset the scene to default position
+                controls.reset();
+                clearInfoPanel();
+                hideInfoPanel();
+            }
+        };
+
+        d3.selectAll("#toggle").on("click", function () {
+            toggleInfoPanel();
+        });
+
+        //make it go
+        animate();
+
+    });
+
+</script>
+</html>

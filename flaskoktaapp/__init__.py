@@ -18,6 +18,7 @@ from flask import (
     session,
     url_for,
     make_response,
+    send_from_directory,
 )
 
 # pip install flask-login
@@ -266,7 +267,11 @@ def logout():
     logout_user()
     return redirect(url_for("main_page"))
 
-
+@app.route("/heatmap/<path:filename>")
+@login_required
+def download_file(filename):
+    return send_from_directory('/opt/flaskoktaapp/docroot/heatmap/',
+                               filename)
 def main():
     port = int(os.environ.get('PORT', 5000))
     if port == 5000:

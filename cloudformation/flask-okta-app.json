@@ -179,7 +179,8 @@
                                 {
                                     "Ref":"Environment"
                                 },
-                                " --execute \"include 'flaskoktaapp'\"\n"
+                                " --execute \"include 'flaskoktaapp'\"\n",
+                                " - ln -v -s /opt/src/docroot /opt/flaskoktaapp/docroot\n"
                             ]
                         ]
                     }

@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>Test Login</h1>
+<p>
+  Please <a href="{{ url_for('sp_initiated') }}">Login</a> for access.
+</p>
+<h1>Testing Login Info</h1>
+<ul>
+<li>Issuer : <input type=text onclick="this.focus();this.select()" readonly="readonly" value="urn:example:idp"></li>
+<li>SP ACS URL : <input type=text onclick="this.focus();this.select()" readonly="readonly" size=30 value="{{ url_for('idp_initiated', _external=True, _scheme=config['acs_url_scheme']) }}"></li>
+</ul>
+{% endblock %}

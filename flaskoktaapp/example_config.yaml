@@ -1,0 +1,7 @@
+secret_key: fa09f7bb-1de4-4601-9669-2ff522deb324
+metadata_url_for:
+  okta: http://idp.oktadev.com/metadata
+idp_name: okta
+acs_url_scheme: http
+PREFERRED_URL_SCHEME: http
+loglevel: DEBUG

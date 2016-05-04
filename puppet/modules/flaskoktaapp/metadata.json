@@ -1,0 +1,22 @@
+{
+  "name": "gene1wood-flaskoktaapp",
+  "version": "1.0.0",
+  "author": "Gene Wood",
+  "license": "MPL-2.0",
+  "summary": "Module to deploy the a Flask Okta authenticated application",
+  "source": "https://github.com/gene1wood/flaskoktaapp/tree/master/puppet/modules/flaskoktaapp",
+  "project_page": "https://github.com/gene1wood/flaskoktaapp",
+  "issues_url": "https://github.com/gene1wood/flaskoktaapp/issues",
+  "tags": [],
+  "operatingsystem_support": [
+    {
+    "operatingsystem":"RedHat",
+    "operatingsystemrelease":[ "7", "6" ]
+    }
+   ],
+  "dependencies": [
+    { "name": "stankevich/python", "version_requirement": "1.9.x" },
+    { "name": "stahnma/epel", "version_requirement": "1.x" },
+    { "name": "puppetlabs/apache", "version_requirement": "1.8.x" }
+  ]
+}

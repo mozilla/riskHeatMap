@@ -231,7 +231,10 @@ def sp_initiated():
 @app.route("/", methods=['GET', 'POST'])
 @login_required
 def main_page():
-    return render_template('main_page.html')
+    if 'saml_attributes' in session:
+        return redirect('/heatmap/heatmap.html')
+    else:
+        return render_template('main_page.html')
 
 
 @app.route("/example.json")

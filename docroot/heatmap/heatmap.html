@@ -47,7 +47,7 @@
         /* http://www.sitepoint.com/css3-sliding-menu/ */
         leftnav {
             position: fixed;
-            left: -17em;
+            left: -12em;
             top: 0;
             bottom: 0;
             /*background-color: #654;*/
@@ -56,7 +56,6 @@
             box-shadow: 4px 0 5px rgba(0,0,0,0.2);
             z-index: 1;
             text-align: left;
-            font-weight: bolder;
             display: inline-block;
             height: 100%;
             margin: 0em;
@@ -85,6 +84,14 @@
 
         leftnav div {
             margin:auto;
+        }
+        
+        leftnav p {
+            margin:auto;
+            padding-left: .5em;
+            padding-right: .5em;
+            padding-top: .5em;
+            color:#fff;
         }
 
         leftnav:hover {
@@ -184,11 +191,10 @@
 <body>
     <leftnav>
         <div>
-            <ul>
-                <li>a filtering thing here</li>
-                <li>another filtering thing here</li>
-                <li><button id="toggle" type="button" class="btn btn-default">Toggle Info Panel</button></li>
-            </ul>
+            <p>Instructions:</p>
+            <p>ESC: reset</p>
+            <p>Double click for details</p>
+            <p>Zoom/pan with mouse</p>
         </div>
     </leftnav>
     <div id="rightpanel">

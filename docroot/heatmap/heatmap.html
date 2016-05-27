@@ -351,7 +351,7 @@
           return {
             name: risk.rra.name,
             record: risk,
-            score: Number(Number(risk.score).toFixed()),
+            score: Number(Number(risk.risk.median).toFixed()),
             label: risk.normalized_label
           };
         });
@@ -414,8 +414,7 @@
             .domain([d3.min(riskScores),d3.max(riskScores)])
             .rangeRound([0, 255]);
 
-        window.redness=redness;
-        window.riskScores=riskScores;
+
         // Cubes/sizes
         var boxWidth = 75;
         var boxHeight = 50;

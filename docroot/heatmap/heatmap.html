@@ -235,12 +235,24 @@
 
     d3.json("risks.json", function(error, jsondata) {
 
+        // http://www.colourlovers.com/palette/4254683/Colour_Pattern_234
+
         var riskColors = [
-            {name: 'maximum',  color: '#FF0000'},
-            {name: 'high',  color: '#A40802'},
-            {name: 'medium',  color: '#00C2E0'},
-            {name: 'low',  color: '#ADD8C7'},
-            {name: 'none',  color: '#FFFFFF'},
+            {name: 'maximum',  color: '#E37661'},
+            {name: 'high',  color: '#FCB485'},
+            {name: 'medium',  color: '#FFD2A6'},
+            {name: 'low',  color: '#F4EEFF'},
+            {name: 'none',  color: '#584B60'},
+            {name: 'unknown',  color: '#FFFFFF'},
+        ];
+        // http://www.colourlovers.com/palette/1781826/Heatmap
+        // plus a green for low from: http://www.colourlovers.com/palette/4254721/Polaroid_Yards
+        var riskColors = [
+            {name: 'maximum',  color: '#d14124'},
+            {name: 'high',  color: '#ed8b00'},
+            {name: 'medium',  color: '#f3d03e'},
+            {name: 'low',  color: '#2F5530'},
+            {name: 'none',  color: '#d9d9d6'},
             {name: 'unknown',  color: '#FFFFFF'},
         ];
         var riskLabels =[];
@@ -352,13 +364,13 @@
 
 
         //walk the data we got (risks) and setup color ranges, map key elements, etc
-        color = d3.scale.category20c();
+        defaultColors = d3.scale.category20c();
         data = _.map(risks,function(risk) {
           return {
             name: risk.rra.name,
             record: risk,
             score: Number(Number(risk.risk.median).toFixed()),
-            label: risk.normalized_label
+            label: risk.risk.median_label
           };
         });
 
@@ -370,17 +382,9 @@
         //setup the range of risk scores, owners, operators, developers
         //and set colors for each record.
         data.forEach(function(d, i) {
-            var templateColor = d3.hcl(color(i));
-            //if (d.score >= 70) {
-            //    //templateColor=templateColor.brighter(d.score/100)
-            //    redness=templateColor.rgb().r;
-            //    redness=d3.min([d.score*redness/70,255]);
-            //    templateColor=d3.rgb(redness,templateColor.rgb().g,templateColor.rgb().b);
-            //}else{
-            //    templateColor=templateColor.darker(d.score/70);
-            //}
-            if ( riskScores.indexOf(d.score )==-1) {
-                riskScores.push(d.score);
+
+            if ( riskScores.indexOf(d.score * d.record.risk.data_classification)==-1) {
+                riskScores.push(d.score * d.record.risk.data_classification);
             }
             if ( developers.indexOf(d.record.rra.rra_details.details.metadata.developer) ==-1) {
                 developers.push(d.record.rra.rra_details.details.metadata.developer);
@@ -394,15 +398,11 @@
                 owners.push(d.record.rra.rra_details.details.metadata.owner);
                 //console.log('adding ' + d.record.rra.rra_details.details.metadata.owner )
             }
-            if ( riskLabels.indexOf(d.record.normalized_label) ==-1) {
-                riskLabels.push(d.record.normalized_label);
-                console.log('adding ' + d.record.normalized_label );
+            if ( riskLabels.indexOf(d.record.risk.median_label) ==-1) {
+                riskLabels.push(d.record.risk.median_label);
+                //console.log('adding ' + d.record.risk.median_label );
             }
 
-
-            return d.template_color=templateColor;
-            //return d.template_color= _.findWhere(riskColors, {name:d.record.normalized_label}).color;
-          //return d.template_color = d3.hcl(color(i)).brighter(d.score);
         });
 
         //debug
@@ -491,12 +491,32 @@
 
         //for each item, make a box and put it on the grid
         data.forEach(function(d,i){
-            //var material = new THREE.MeshLambertMaterial( { color: 0x5db3de, overdraw: 0.5 } );
-            thisColor=d3.hcl(d.template_color);
+            //figure out what the color of this box should be
+            //start with a safe choice from the template
+            riskColor = d3.hcl(defaultColors(i));
+            
+            //set the color according to the worse case risk name from our list of riskColors
+            try {
+                aColor=_.findWhere(riskColors, {name: d.record.risk.worst_case_label});
+                if ( ! _.isUndefined(aColor)) {
+                    riskColor=d3.hcl(aColor.color)
+                }
+            } catch(e){
+                console.log(e)
+            }
+            
+            //various trials
             //scaleColor=d3.rgb(redness(d.score),redness(d.score),redness(d.score));
-            scaleColor=d3.rgb(redness(d.score),thisColor.rgb().g,thisColor.rgb().b);
-            //scaleColor=d3.rgb(redness(d.score),120,1);
-            //console.log(scaleColor.toString(), redness(d.score));
+            //scaleColor=d3.rgb(redness(d.score),thisColor.rgb().g,thisColor.rgb().b);
+            //console.log(redness(d.score * d.record.risk.data_classification),riskColor.rgb().g,thisColor.rgb().b);
+            //scaleColor=d3.rgb(redness(d.score * d.record.risk.data_classification),riskColor.rgb().g,thisColor.rgb().b);
+            
+            //lighten by risk score (median * worstcase * data classification)
+            scaleColor=riskColor.brighter(d.score * d.record.risk.data_classification);
+            //darken by data classificaiton
+            scaleColor=scaleColor.darker(d.record.risk.data_classification);
+            
+            //set the material using the color
             var material = new THREE.MeshPhongMaterial( { color: scaleColor.toString(),
                                                             opacity: .7,
                                                             transparent: true,

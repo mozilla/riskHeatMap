@@ -85,7 +85,7 @@
         leftnav div {
             margin:auto;
         }
-        
+
         leftnav p {
             margin:auto;
             padding-left: .5em;
@@ -150,6 +150,11 @@
         .serviceName {
             text-transform: uppercase;
         }
+
+        .systemGroup {
+            text-transform: uppercase;
+        }
+
         h3, ul {
             margin:0;
             padding:0;
@@ -176,7 +181,8 @@
         }
         /*height of the right panel detail space */
         li h3:hover + div, li div:hover {
-            height:200px;
+            height: 200px;
+            overflow: auto;
         }
     </style>
 
@@ -211,7 +217,7 @@
                     <div id="webLayer"></div>
                 </li>
                 <li>
-                    <h3>OS</h3>
+                    <h3>OS Compliance</h3>
                     <div id="osLayer"></div>
                 </li>
                 <li>
@@ -494,7 +500,7 @@
             //figure out what the color of this box should be
             //start with a safe choice from the template
             riskColor = d3.hcl(defaultColors(i));
-            
+
             //set the color according to the worse case risk name from our list of riskColors
             try {
                 aColor=_.findWhere(riskColors, {name: d.record.risk.worst_case_label});
@@ -504,18 +510,19 @@
             } catch(e){
                 console.log(e)
             }
-            
+
             //various trials
             //scaleColor=d3.rgb(redness(d.score),redness(d.score),redness(d.score));
             //scaleColor=d3.rgb(redness(d.score),thisColor.rgb().g,thisColor.rgb().b);
             //console.log(redness(d.score * d.record.risk.data_classification),riskColor.rgb().g,thisColor.rgb().b);
             //scaleColor=d3.rgb(redness(d.score * d.record.risk.data_classification),riskColor.rgb().g,thisColor.rgb().b);
-            
+
             //lighten by risk score (median * worstcase * data classification)
             scaleColor=riskColor.brighter(d.score * d.record.risk.data_classification);
             //darken by data classificaiton
             scaleColor=scaleColor.darker(d.record.risk.data_classification);
-            
+            d.record.color=scaleColor.toString();
+
             //set the material using the color
             var material = new THREE.MeshPhongMaterial( { color: scaleColor.toString(),
                                                             opacity: .7,
@@ -624,10 +631,14 @@
                 if ( intersects.length > 0 ) {
                     target=intersects[0].object;
                     //debug
-                    //window.target=target;
+                    window.target=target;
 
                     //visual for selection
                     target.material.color.setHex( Math.random() * 0xffffff );
+                    //set color back after we've finished zooming
+                    window.setTimeout(function(){
+                        target.material.color.setStyle(target.record.color);
+                    },2000);
 
                     //pick a spot for the camera to pan into
                     targetCamera = target.position.clone();
@@ -661,17 +672,91 @@
                     .html('<a target="_blank" href="https://docs.google.com/spreadsheets/d/' +target.record.rra.rra_details.source + '">' + "RRA Doc</a>");
 
                     _.pairs(target.record.rra.rra_details.details.metadata).forEach(function(d,i){
-
                         if (d[1].length>0) {
                             d3.select(".rraLayerList")
                             .append("li")
                             .classed('firstUpper',true)
-                            .text(d[0] + ": " + d[1])
-
+                            .text(d[0] + ": " + d[1]);
                         }
                     });
-                }
-            }
+
+                    //vulnerability/compliance data?
+                    if ( target.record.rra.supporting_system_groups !== undefined ) {
+                        d3.select("#osVulnerabilities")
+                        .append("ul")
+                        .classed('osVulnerabilitiesList',true);
+
+                        d3.select("#osLayer")
+                        .append("ul")
+                        .classed('osComplianceList',true);
+
+                        target.record.rra.supporting_system_groups.forEach(function(d,i){
+                            //add the system group name to the vulns and compliance sections
+                            if (_.has(d,"name")) {
+                                d3.select(".osVulnerabilitiesList")
+                                .append("li")
+                                .classed('systemGroup',true)
+                                .text(d.name + ':');
+
+                                d3.select(".osComplianceList")
+                                .append("li")
+                                .classed('systemGroup',true)
+                                .text(d.name + ':');
+                            }
+
+                            //for each host, summarize the vulns and compliance
+                            d.hosts.forEach(function(host,i){
+                                hostname='unknown'
+                                if (_.has(host,"hostname") && _.has(host,"vulnerabilities")) {
+                                    vulnTable = d3.select(".osVulnerabilitiesList")
+                                    .append("li")
+                                    .append("table")
+
+                                    vulnTable.append("thead")
+                                        .append("th")
+                                        .attr("colspan","5")
+                                        .html(host.hostname);
+
+                                    tbody=vulnTable.append("tbody");
+                                    var rows = tbody.selectAll("tr")
+                                        .data([host])
+                                        .enter()
+                                        .append("tr")
+                                        .attr("style", "font-family: Courier;font-size: small; ");
+
+                                    var columns = rows.selectAll("td")
+                                        .data(_.pairs(host.vulnerabilities))
+                                        .enter().append("td")
+                                        .html(function(d){return d[0] + ': ' + d[1];});
+                                }
+
+                                if (_.has(host,"hostname") && _.has(host,"compliance")) {
+                                    complianceTable = d3.select(".osComplianceList")
+                                    .append("li")
+                                    .append("table")
+
+                                    complianceTable.append("thead")
+                                        .append("th")
+                                        .attr("colspan","5")
+                                        .html(host.hostname);
+
+                                    tbody=complianceTable.append("tbody");
+                                    var rows = tbody.selectAll("tr")
+                                        .data([host])
+                                        .enter()
+                                        .append("tr")
+                                        .attr("style", "font-family: Courier;font-size: small; ");
+
+                                    var columns = rows.selectAll("td")
+                                        .data(_.pairs(_.omit(host.compliance,'details'))) //remove details sub object.
+                                        .enter().append("td")
+                                        .html(function(d){return d[0] + ': ' + d[1];});
+                                }
+                            });
+                        });
+                    } //end we have vuln/compliance data
+                } //end mouse intersected a box
+            } //end onMouseDblClick
 
         //add our event listeners
         window.addEventListener( 'resize', onWindowResize, false );

@@ -60,6 +60,7 @@
             height: 100%;
             margin: 0em;
             line-height: normal;
+            color:#fff;
         }
 
         /*pull out triangle*/
@@ -91,7 +92,6 @@
             padding-left: .5em;
             padding-right: .5em;
             padding-top: .5em;
-            color:#fff;
         }
 
         leftnav:hover {
@@ -184,6 +184,18 @@
             height: 200px;
             overflow: auto;
         }
+        
+        .tt-menu {
+            max-height: 150px;
+            overflow-y: auto;
+            padding: 4px 0;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border: 1px solid rgba(0, 0, 0, 0.2);
+            color: black;
+            width: 422px;
+            margin-top: 4px;            
+        }        
     </style>
 
     <script src="underscore-min.js"></script>
@@ -192,16 +204,36 @@
     <script src="OrbitControls.js"></script>
     <script src="CSS3DRenderer.js"></script>
     <script src="Tween.js"></script>
+    <script src="jquery-1.12.4.min.js"></script>
+    <script src="typeahead.bundle.js"></script>
 
 </head>
 <body>
     <leftnav>
-        <div>
+        <div id=instructions>
             <p>Instructions:</p>
             <p>ESC: reset</p>
             <p>Double click for details</p>
-            <p>Zoom/pan with mouse</p>
+            <p>mouse wheel == zoom</p>
+            <p>ctrl + mouse == pan</p>
+            <p>mouse drag == rotate</p>
         </div>
+        <br>
+        <p>filters coming soon</p>
+        <div id="ownerFilter">
+            <div class="filterLabel">owner:</div>    
+            <input class="typeahead" type="text" placeholder="service owner">
+        </div>        
+        <br>
+        <div id="operatorFilter">
+            <div class="filterLabel">operator:</div>    
+            <input class="typeahead" type="text" placeholder="service operator">
+        </div> 
+        <br>
+        <div id="developerFilter">
+            <div class="filterLabel">developer:</div>    
+            <input class="typeahead" type="text" placeholder="service developer">
+        </div> 
     </leftnav>
     <div id="rightpanel">
         <div id="rightPanelClose"><a onclick="hideInfoPanel()" href="#">X</a></div>
@@ -343,6 +375,27 @@
             d3.select("#threatLayer").select("*").remove();
         }
 
+        var substringMatcher = function(strs) {
+            return function findMatches(q, cb) {
+                var matches, substringRegex;
+            
+                // an array that will be populated with substring matches
+                matches = [];
+            
+                // regex used to determine if a string contains the substring `q`
+                substrRegex = new RegExp(q, 'i');
+            
+                // iterate through the pool of strings and for any string that
+                // contains the substring `q`, add it to the `matches` array
+                $.each(strs, function(i, str) {
+                    if (substrRegex.test(str)) {
+                      matches.push(str);
+                    }
+                });
+                cb(matches);
+            };
+        };        
+
         function toDegrees(rad) {
             return rad * (180/Math.PI);
         }
@@ -411,6 +464,33 @@
 
         });
 
+        //hook up the typeahead filters
+        $('#ownerFilter .typeahead').typeahead({
+          hint: true,
+          highlight: true,
+          minLength: 1
+        },
+        {
+          name: 'owners',
+          source: substringMatcher(owners)
+        });
+
+        $('#operatorFilter .typeahead').typeahead({
+          hint: true,
+          highlight: true,
+          minLength: 1
+        },
+        {
+          name: 'operators',
+          source: substringMatcher(operators)
+        });
+
+        $('#developerFilter .typeahead').typeahead(null,
+        {
+          name: 'developers',
+          source: substringMatcher(developers)
+        });
+        
         //debug
         //window.riskScores=riskScores;
         //window.developers=developers;
@@ -758,18 +838,37 @@
                 } //end mouse intersected a box
             } //end onMouseDblClick
 
-        //add our event listeners
-        window.addEventListener( 'resize', onWindowResize, false );
-        document.addEventListener( 'dblclick', onMouseDblClick, false );
-        document.onkeydown = function(evt) {
-            evt = evt || window.event;
-            if (evt.keyCode == 27 || evt.keyCode == 32 ) {
+            
+        function keyHandler(event) {
+            event = event || window.event;
+            if (event.keyCode == 27 || event.keyCode == 32 ) {
                 //reset the scene to default position
                 controls.reset();
                 clearInfoPanel();
                 hideInfoPanel();
             }
-        };
+        }
+
+        function disableControls(event) {
+            controls.enabled=false;
+        }
+        
+        function enableControls(event) {
+            controls.enabled=true;
+        }
+
+        //add our event listeners
+        window.addEventListener( 'resize', onWindowResize, false );
+        document.addEventListener( 'dblclick', onMouseDblClick, false );
+        document.addEventListener('keyup',keyHandler,false);
+        
+        //if the navigation/info panes are showing, disable the three.js scene controls
+        //to allow mose movements.
+        d3.selectAll("leftnav").node().addEventListener('mouseenter',disableControls,false);
+        d3.selectAll("leftnav").node().addEventListener('mouseleave',enableControls,false);
+        d3.selectAll("#rightpanel").node().addEventListener('mouseenter',disableControls,false);
+        d3.selectAll("#rightpanel").node().addEventListener('mouseleave',enableControls,false);
+        
 
         d3.selectAll("#toggle").on("click", function () {
             toggleInfoPanel();

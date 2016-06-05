@@ -184,7 +184,7 @@
             height: 200px;
             overflow: auto;
         }
-        
+
         .tt-menu {
             max-height: 150px;
             overflow-y: auto;
@@ -194,8 +194,8 @@
             border: 1px solid rgba(0, 0, 0, 0.2);
             color: black;
             width: 422px;
-            margin-top: 4px;            
-        }        
+            margin-top: 4px;
+        }
     </style>
 
     <script src="underscore-min.js"></script>
@@ -221,19 +221,19 @@
         <br>
         <p>filters coming soon</p>
         <div id="ownerFilter">
-            <div class="filterLabel">owner:</div>    
+            <div class="filterLabel">owner:</div>
             <input class="typeahead" type="text" placeholder="service owner">
-        </div>        
+        </div>
         <br>
         <div id="operatorFilter">
-            <div class="filterLabel">operator:</div>    
+            <div class="filterLabel">operator:</div>
             <input class="typeahead" type="text" placeholder="service operator">
-        </div> 
+        </div>
         <br>
         <div id="developerFilter">
-            <div class="filterLabel">developer:</div>    
+            <div class="filterLabel">developer:</div>
             <input class="typeahead" type="text" placeholder="service developer">
-        </div> 
+        </div>
     </leftnav>
     <div id="rightpanel">
         <div id="rightPanelClose"><a onclick="hideInfoPanel()" href="#">X</a></div>
@@ -378,13 +378,13 @@
         var substringMatcher = function(strs) {
             return function findMatches(q, cb) {
                 var matches, substringRegex;
-            
+
                 // an array that will be populated with substring matches
                 matches = [];
-            
+
                 // regex used to determine if a string contains the substring `q`
                 substrRegex = new RegExp(q, 'i');
-            
+
                 // iterate through the pool of strings and for any string that
                 // contains the substring `q`, add it to the `matches` array
                 $.each(strs, function(i, str) {
@@ -394,7 +394,7 @@
                 });
                 cb(matches);
             };
-        };        
+        };
 
         function toDegrees(rad) {
             return rad * (180/Math.PI);
@@ -490,7 +490,7 @@
           name: 'developers',
           source: substringMatcher(developers)
         });
-        
+
         //debug
         //window.riskScores=riskScores;
         //window.developers=developers;
@@ -510,20 +510,18 @@
         // Cubes/sizes
         var boxWidth = 75;
         var boxHeight = 50;
-        var boxDepth = 60;
-        var gridSize = 500;
+        var boxDepth = 70;
+        var gridSize = 600;
         var squareSize = 75;
 
         //grid
         var grid = new THREE.GridHelper( gridSize, squareSize );
         grid.setColors( 0x0000ff, 0x808080 );
-        //grid.position.y = - 15;
         scene.add( grid );
 
         //calc the positions on the grid in order of closest to farthest
         //for assigning boxes by their risk
         var gridPositions=[];
-        var quadrant=1;
         // q1 x=10, z=10
         // q2 x=-9, z=10
         // q3 x=-9, z=-9
@@ -538,11 +536,11 @@
         //increase x until it reaches maxX
         //next step
         //          1    3          5                7                      9                    11                        13
-        xpositions=[10,  9, 9, 10,  8, 8, 8, 9, 10,  7, 7, 7, 7, 8, 9, 10,  6,6,6,6,6,7,8,9,10,  5,5,5,5,5,5,6,7,8,9,10 ,  4,4,4,4,4,4,4,5,6,7,8,9,10]
-        zpositions=[10, 10, 9, 9,  10, 9, 8, 8, 8,  10, 9, 8, 7, 7, 7,  7,  10,9,8,7,6,6,6,6,6, 10,9,8,7,6,5,5,5,5,5, 5 , 10,9,8,7,6,5,4,4,4,4,4,4,4]
+        //xpositions=[10,  9, 9, 10,  8, 8, 8, 9, 10,  7, 7, 7, 7, 8, 9, 10,  6,6,6,6,6,7,8,9,10,  5,5,5,5,5,5,6,7,8,9,10 ,  4,4,4,4,4,4,4,5,6,7,8,9,10]
+        //zpositions=[10, 10, 9, 9,  10, 9, 8, 8, 8,  10, 9, 8, 7, 7, 7,  7,  10,9,8,7,6,6,6,6,6, 10,9,8,7,6,5,5,5,5,5, 5 , 10,9,8,7,6,5,4,4,4,4,4,4,4]
         var maxZ = gridSize/squareSize;
         var maxX = gridSize/squareSize;
-        var lastX = maxX-1;
+        var lastX = maxX;
         var lastZ = maxZ;
         //console.log(maxZ,maxX,lastX,lastZ);
         //add the starting point
@@ -620,15 +618,12 @@
             var cubeLabel = document.createElement('div');
             cubeLabel.className='label';
             cubeLabel.textContent=getFirstWord(d.name);
-            //cubeLabel.title=d.record._source.details.metadata.service + ' ' + _.pairs(d.counts).toString() + ' total score: ' + d.score + ' area ' + d.area;
 
             //position the label
             //var label = new THREE.CSS3DObject(labelDIV.node());
             var label = new THREE.CSS3DObject(cubeLabel);
             label.position.copy(cube.position);
             label.position.y=cube.scale.y*boxHeight
-            //label.position.x=cube.position.x + (boxWidth - (boxWidth/2));
-            //label.rotateZ(THREE.Math.degToRad(45));
             label.rotateX(THREE.Math.degToRad(-90));
 
             scene.add(cube);
@@ -769,6 +764,10 @@
                         d3.select("#osLayer")
                         .append("ul")
                         .classed('osComplianceList',true);
+                        
+                        d3.select("#webLayer")
+                        .append("ul")
+                        .classed('webLayerRatings',true);
 
                         target.record.rra.supporting_system_groups.forEach(function(d,i){
                             //add the system group name to the vulns and compliance sections
@@ -784,61 +783,92 @@
                                 .text(d.name + ':');
                             }
 
-                            //for each host, summarize the vulns and compliance
-                            d.hosts.forEach(function(host,i){
-                                hostname='unknown'
-                                if (_.has(host,"hostname") && _.has(host,"vulnerabilities")) {
-                                    vulnTable = d3.select(".osVulnerabilitiesList")
-                                    .append("li")
-                                    .append("table")
+                            if ( d.hosts !== undefined ) {
+                                //for each host, summarize the vulns and compliance
+                                d.hosts.forEach(function(host,i){
+                                    hostname='unknown'
+                                    if (_.has(host,"hostname") && _.has(host,"vulnerabilities")) {
+                                        vulnTable = d3.select(".osVulnerabilitiesList")
+                                        .append("li")
+                                        .append("table")
+    
+                                        vulnTable.append("thead")
+                                            .append("th")
+                                            .attr("colspan","5")
+                                            .html(host.hostname);
+    
+                                        tbody=vulnTable.append("tbody");
+                                        var rows = tbody.selectAll("tr")
+                                            .data([host])
+                                            .enter()
+                                            .append("tr")
+                                            .attr("style", "font-family: Courier;font-size: small; ");
+    
+                                        var columns = rows.selectAll("td")
+                                            .data(_.pairs(host.vulnerabilities))
+                                            .enter().append("td")
+                                            .html(function(d){return d[0] + ': ' + d[1];});
+                                    }
+    
+                                    if (_.has(host,"hostname") && _.has(host,"compliance")) {
+                                        complianceTable = d3.select(".osComplianceList")
+                                        .append("li")
+                                        .append("table")
+    
+                                        complianceTable.append("thead")
+                                            .append("th")
+                                            .attr("colspan","5")
+                                            .html(host.hostname);
+    
+                                        tbody=complianceTable.append("tbody");
+                                        var rows = tbody.selectAll("tr")
+                                            .data([host])
+                                            .enter()
+                                            .append("tr")
+                                            .attr("style", "font-family: Courier;font-size: small; ");
+    
+                                        var columns = rows.selectAll("td")
+                                            .data(_.pairs(_.omit(host.compliance,'details'))) //remove details sub object.
+                                            .enter().append("td")
+                                            .html(function(d){return d[0] + ': ' + d[1];});
+                                    }
+                                });//end hosts
+                            }//end hosts exists
+                            
+                            if ( d.websites !== undefined ) {
+                                //for each website show the rankings
+                                d.websites.forEach(function(site,i){
+                                    if (_.has(site,"hostname") && _.has(site,"http_observatory")) {
+                                        complianceTable = d3.select(".webLayerRatings")
+                                        .append("li")
+                                        .append("table")
+    
+                                        complianceTable.append("thead")
+                                            .append("th")
+                                            .attr("colspan","5")
+                                            .html(site.hostname);
+    
+                                        tbody=complianceTable.append("tbody");
+                                        var rows = tbody.selectAll("tr")
+                                            .data([site])
+                                            .enter()
+                                            .append("tr")
+                                            .attr("style", "font-family: Courier;font-size: small; ");
+    
+                                        var columns = rows.selectAll("td")
+                                            .data(_.pairs(_.omit(site.http_observatory,'coverage'))) //remove details sub object.
+                                            .enter().append("td")
+                                            .html(function(d){return d[0] + ': ' + d[1];});
+                                    }
+                                });//end website details
+                            } //end  websites
 
-                                    vulnTable.append("thead")
-                                        .append("th")
-                                        .attr("colspan","5")
-                                        .html(host.hostname);
-
-                                    tbody=vulnTable.append("tbody");
-                                    var rows = tbody.selectAll("tr")
-                                        .data([host])
-                                        .enter()
-                                        .append("tr")
-                                        .attr("style", "font-family: Courier;font-size: small; ");
-
-                                    var columns = rows.selectAll("td")
-                                        .data(_.pairs(host.vulnerabilities))
-                                        .enter().append("td")
-                                        .html(function(d){return d[0] + ': ' + d[1];});
-                                }
-
-                                if (_.has(host,"hostname") && _.has(host,"compliance")) {
-                                    complianceTable = d3.select(".osComplianceList")
-                                    .append("li")
-                                    .append("table")
-
-                                    complianceTable.append("thead")
-                                        .append("th")
-                                        .attr("colspan","5")
-                                        .html(host.hostname);
-
-                                    tbody=complianceTable.append("tbody");
-                                    var rows = tbody.selectAll("tr")
-                                        .data([host])
-                                        .enter()
-                                        .append("tr")
-                                        .attr("style", "font-family: Courier;font-size: small; ");
-
-                                    var columns = rows.selectAll("td")
-                                        .data(_.pairs(_.omit(host.compliance,'details'))) //remove details sub object.
-                                        .enter().append("td")
-                                        .html(function(d){return d[0] + ': ' + d[1];});
-                                }
-                            });
                         });
                     } //end we have vuln/compliance data
                 } //end mouse intersected a box
             } //end onMouseDblClick
 
-            
+
         function keyHandler(event) {
             event = event || window.event;
             if (event.keyCode == 27 || event.keyCode == 32 ) {
@@ -852,7 +882,7 @@
         function disableControls(event) {
             controls.enabled=false;
         }
-        
+
         function enableControls(event) {
             controls.enabled=true;
         }
@@ -861,14 +891,14 @@
         window.addEventListener( 'resize', onWindowResize, false );
         document.addEventListener( 'dblclick', onMouseDblClick, false );
         document.addEventListener('keyup',keyHandler,false);
-        
+
         //if the navigation/info panes are showing, disable the three.js scene controls
         //to allow mose movements.
         d3.selectAll("leftnav").node().addEventListener('mouseenter',disableControls,false);
         d3.selectAll("leftnav").node().addEventListener('mouseleave',enableControls,false);
         d3.selectAll("#rightpanel").node().addEventListener('mouseenter',disableControls,false);
         d3.selectAll("#rightpanel").node().addEventListener('mouseleave',enableControls,false);
-        
+
 
         d3.selectAll("#toggle").on("click", function () {
             toggleInfoPanel();

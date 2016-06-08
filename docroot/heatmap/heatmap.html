@@ -220,20 +220,28 @@
             <p>right mouse = rotate</p>
         </div>
         <br>
-        <p>filters coming soon</p>
+        <div>
+            <hr>
+            <div>Filters:</div>
+            <div><button id="btnFilter" type="button" class="btn btn-default">Filter</button></div>
+            <div><button id="btnClearCriteria" type="button" class="btn btn-default">Clear Criteria</button></div>
+            <hr>
+        </div>
+        
+        
         <div id="ownerFilter">
             <div class="filterLabel">owner:</div>
-            <input class="typeahead" type="text" placeholder="service owner">
+            <input class="typeahead" id="owner" type="text" placeholder="service owner">
         </div>
         <br>
         <div id="operatorFilter">
             <div class="filterLabel">operator:</div>
-            <input class="typeahead" type="text" placeholder="service operator">
+            <input class="typeahead" id="operator" type="text" placeholder="service operator">
         </div>
         <br>
         <div id="developerFilter">
             <div class="filterLabel">developer:</div>
-            <input class="typeahead" type="text" placeholder="service developer">
+            <input class="typeahead" id="developer" type="text" placeholder="service developer">
         </div>
     </leftnav>
     <div id="rightpanel">
@@ -351,12 +359,6 @@
                     return _.first(words,5).join(' ');
                 }
             };
-
-        toggleInfoPanel = function() {
-                //toggle the right info panel
-                var isActive = d3.select("#rightpanel").classed("on");
-                d3.select("#rightpanel").classed("on",!isActive);
-        }
 
         hideInfoPanel = function() {
                 d3.select("#rightpanel").classed("on",false);
@@ -900,9 +902,52 @@
         d3.selectAll("#rightpanel").node().addEventListener('mouseenter',disableControls,false);
         d3.selectAll("#rightpanel").node().addEventListener('mouseleave',enableControls,false);
 
+        d3.selectAll("#btnClearCriteria").on("click",function(){
+            d3.selectAll("#developer").node().value="";
+            d3.selectAll("#owner").node().value="";
+            d3.selectAll("#operator").node().value="";
+            });
 
-        d3.selectAll("#toggle").on("click", function () {
-            toggleInfoPanel();
+        d3.selectAll("#btnFilter").on("click", function () {
+            btn=d3.selectAll("#btnFilter").node();
+            clearFilter=true;
+            developer=d3.selectAll("#developer").node().value;
+            owner=d3.selectAll("#owner").node().value;
+            operator=d3.selectAll("#operator").node().value;
+            //filtered currently?
+            btnState=btn.textContent;
+            if (btnState =='Filter') {
+                btn.textContent='Filter off';
+                clearFilter=false;
+            }
+            if (btnState=='Filter off') {
+                btn.textContent='Filter';
+                
+            }
+            if (clearFilter) {
+                //run through the cubes and set opacity to viewable
+                scene.children.forEach(function(element,index) {
+                    if (_.has(element,'record')) {
+                        element.material.opacity=0.7;
+                    }
+                });
+            }else{
+                //run through the cubes and set opacity to non viewable
+                window.scene.children.forEach(function(element,index,array) {
+                    if ( element.record != undefined) {
+                        //it's a cube and we should set opacity
+                        if ( developer.length >1 && element.record.rra.rra_details.details.metadata.developer.indexOf(developer) == -1 ){
+                            element.material.opacity=.001;
+                        }
+                        if ( owner.length > 1 && element.record.rra.rra_details.details.metadata.owner.indexOf(owner) == -1 ){
+                            element.material.opacity=.001;
+                        }
+                        if ( operator.length > 1 && element.record.rra.rra_details.details.metadata.operator.indexOf(operator) ==-1 ){
+                            element.material.opacity=.001;
+                        }
+                    }
+                });
+            }
         });
 
         //make it go

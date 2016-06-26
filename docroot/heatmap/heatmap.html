@@ -227,7 +227,12 @@
             <div><button id="btnClearCriteria" type="button" class="btn btn-default">Clear Criteria</button></div>
             <hr>
         </div>
-        
+
+        <div id="nameFilter">
+            <div class="filterLabel">name:</div>
+            <input class="typeahead" id="name" type="text" placeholder="name of service">
+        </div>
+        <br>        
         
         <div id="ownerFilter">
             <div class="filterLabel">owner:</div>
@@ -308,6 +313,8 @@
         var developers=[];
         var operators=[];
         var owners=[];
+        var names=[];
+        
         //get the list of risks returned.
         risks= jsondata.risks;
 
@@ -445,6 +452,9 @@
         //and set colors for each record.
         data.forEach(function(d, i) {
 
+            if ( names.indexOf(d.record.rra.name)==-1) {
+                names.push(d.record.rra.name);
+            }
             if ( riskScores.indexOf(d.score * d.record.risk.data_classification)==-1) {
                 riskScores.push(d.score * d.record.risk.data_classification);
             }
@@ -468,6 +478,16 @@
         });
 
         //hook up the typeahead filters
+        $('#nameFilter .typeahead').typeahead({
+          hint: true,
+          highlight: true,
+          minLength: 1
+        },
+        {
+          name: 'names',
+          source: substringMatcher(names)
+        });
+
         $('#ownerFilter .typeahead').typeahead({
           hint: true,
           highlight: true,
@@ -499,6 +519,7 @@
         //window.developers=developers;
         //window.operators=operators;
         //window.owners=owners;
+        //window.names=names;
         //with the list of risk scores in the data,
         //setup a d3 scale to size the boxes on the heatmap accordingly.
         riskScale=d3.scale.linear()
@@ -903,6 +924,7 @@
         d3.selectAll("#rightpanel").node().addEventListener('mouseleave',enableControls,false);
 
         d3.selectAll("#btnClearCriteria").on("click",function(){
+            d3.selectAll("#name").node().value="";
             d3.selectAll("#developer").node().value="";
             d3.selectAll("#owner").node().value="";
             d3.selectAll("#operator").node().value="";
@@ -911,6 +933,7 @@
         d3.selectAll("#btnFilter").on("click", function () {
             btn=d3.selectAll("#btnFilter").node();
             clearFilter=true;
+            name=d3.selectAll("#name").node().value;
             developer=d3.selectAll("#developer").node().value;
             owner=d3.selectAll("#owner").node().value;
             operator=d3.selectAll("#operator").node().value;
@@ -936,6 +959,10 @@
                 window.scene.children.forEach(function(element,index,array) {
                     if ( element.record != undefined) {
                         //it's a cube and we should set opacity
+                        
+                        if (name.length >1 && element.record.rra.name.indexOf(name) == -1) {
+                            element.material.opacity=.001;
+                        }
                         if ( developer.length >1 && element.record.rra.rra_details.details.metadata.developer.indexOf(developer) == -1 ){
                             element.material.opacity=.001;
                         }

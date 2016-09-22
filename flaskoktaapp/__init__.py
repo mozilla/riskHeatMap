@@ -231,7 +231,7 @@ def sp_initiated():
 @app.route("/", methods=['GET', 'POST'])
 @login_required
 def main_page():
-    if 'saml_attributes' in session:
+    if False: #'saml_attributes' in session:
         return redirect('/heatmap/heatmap.html')
     else:
         return render_template('main_page.html')
@@ -275,6 +275,18 @@ def logout():
 def download_file(filename):
     return send_from_directory('/opt/flaskoktaapp/docroot/heatmap/',
                                filename)
+
+@app.route("/observatory/")
+@login_required
+def obs_dashboard():
+    return render_template("observatory.html")
+
+@app.route("/observatory/<path:filename>")
+@login_required
+def obs_file(filename):
+    return send_from_directory('/opt/flaskoktaapp/docroot/observatory/',
+                               filename)
+
 def main():
     port = int(os.environ.get('PORT', 5000))
     if port == 5000:

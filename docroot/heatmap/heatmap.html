@@ -819,7 +819,7 @@
                                             .attr("style", "font-family: Courier;font-size: small; ");
     
                                         var columns = rows.selectAll("td")
-                                            .data(_.pairs(host.vulnerabilities))
+                                            .data(_.pairs(_.omit(host.vulnerabilities,'last90days')))  //remove the sub object
                                             .enter().append("td")
                                             .html(function(d){return d[0] + ': ' + d[1];});
                                     }

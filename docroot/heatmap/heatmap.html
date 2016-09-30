@@ -286,26 +286,16 @@
 <script>
 
     d3.json("risks.json", function(error, jsondata) {
+	    console.log(error);
 
-        // http://www.colourlovers.com/palette/4254683/Colour_Pattern_234
-
+	// https://wiki.mozilla.org/Security/Standard_Levels
         var riskColors = [
-            {name: 'maximum',  color: '#E37661'},
-            {name: 'high',  color: '#FCB485'},
-            {name: 'medium',  color: '#FFD2A6'},
-            {name: 'low',  color: '#F4EEFF'},
-            {name: 'none',  color: '#584B60'},
-            {name: 'unknown',  color: '#FFFFFF'},
-        ];
-        // http://www.colourlovers.com/palette/1781826/Heatmap
-        // plus a green for low from: http://www.colourlovers.com/palette/4254721/Polaroid_Yards
-        var riskColors = [
-            {name: 'maximum',  color: '#d14124'},
-            {name: 'high',  color: '#ed8b00'},
-            {name: 'medium',  color: '#f3d03e'},
-            {name: 'low',  color: '#2F5530'},
-            {name: 'none',  color: '#d9d9d6'},
-            {name: 'unknown',  color: '#FFFFFF'},
+            {name: 'maximum',  color: '#d04437'},
+            {name: 'high',  color: '#ffd351'},
+            {name: 'medium',  color: '#4a6785'},
+            {name: 'low',  color: '#cccccc'},
+            {name: 'none',  color: '#ffffff'},
+            {name: 'unknown',  color: '#ffffff'},
         ];
         var riskLabels =[];
         var riskScores= [];
@@ -620,7 +610,7 @@
             //scaleColor=d3.rgb(redness(d.score * d.record.risk.data_classification),riskColor.rgb().g,thisColor.rgb().b);
 
             //lighten by risk score (median * worstcase * data classification)
-            scaleColor=riskColor.brighter(d.score * d.record.risk.data_classification);
+            scaleColor=riskColor.brighter(d.score * (d.record.risk.data_classification/8));
             //darken by data classificaiton
             scaleColor=scaleColor.darker(d.record.risk.data_classification);
             d.record.color=scaleColor.toString();

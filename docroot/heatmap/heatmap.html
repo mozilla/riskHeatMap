@@ -436,7 +436,7 @@
         //sort the data by risk score
         data=_.sortBy(data, 'score');
         //debug select top X records.
-        //data=_.first(data,150);
+        //data=_.first(data,11);
 
         //setup the range of risk scores, owners, operators, developers
         //and set colors for each record.
@@ -525,12 +525,14 @@
         var boxWidth = 75;
         var boxHeight = 50;
         var boxDepth = 70;
-        var gridSize = 600;
         var squareSize = 75;
+        //rows should be one more than the square root of the data length
+        //since 2 rows holds 4 squares.
+        //add one for asthetics to show the grid.
+        var rows = Math.floor(Math.sqrt(data.length))+1;
 
         //grid
-        var grid = new THREE.GridHelper( gridSize, squareSize );
-        grid.setColors( 0x0000ff, 0x808080 );
+        var grid = new THREE.GridHelper((squareSize * rows),rows, 0x0000ff, 0x808080 );
         scene.add( grid );
 
         //calc the positions on the grid in order of closest to farthest
@@ -552,6 +554,7 @@
         //          1    3          5                7                      9                    11                        13
         //xpositions=[10,  9, 9, 10,  8, 8, 8, 9, 10,  7, 7, 7, 7, 8, 9, 10,  6,6,6,6,6,7,8,9,10,  5,5,5,5,5,5,6,7,8,9,10 ,  4,4,4,4,4,4,4,5,6,7,8,9,10]
         //zpositions=[10, 10, 9, 9,  10, 9, 8, 8, 8,  10, 9, 8, 7, 7, 7,  7,  10,9,8,7,6,6,6,6,6, 10,9,8,7,6,5,5,5,5,5, 5 , 10,9,8,7,6,5,4,4,4,4,4,4,4]
+        gridSize=squareSize*(rows/2);
         var maxZ = gridSize/squareSize;
         var maxX = gridSize/squareSize;
         var lastX = maxX;
@@ -560,7 +563,7 @@
         //add the starting point
         gridPositions.push({x:maxX,z:maxZ});
         for (var i = maxX-1; i > maxX*-1; i--) {
-           //console.log(i)
+           //console.log('rows: ' + i)
            lastX=i;
 
             for (var z=lastZ;z >lastX-1;z--){
@@ -570,7 +573,7 @@
                 position.z=z;
                 gridPositions.push(position);
             }
-           for (var x=lastX;x <=maxX;x++){
+            for (var x=lastX;x <=maxX;x++){
                 //console.log('in maxX');
                 var position={}
                 position.x=x;

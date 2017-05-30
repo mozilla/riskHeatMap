@@ -1,0 +1,29 @@
+{
+    "name": "Risk Heatmap",
+    "description": "Three.js powered dashboard for risks, 2D dashboard for website security status.",
+    "repository": {
+        "url": "https://github.com/mozilla/riskHeatMap",
+        "license": "MPL2"
+    },
+    "participate": {
+        "home": "https://github.com/mozilla/riskHeatMap",
+        "docs": "https://github.com/mozilla/riskHeatMap",
+        "irc": "irc://irc.mozilla.org/#infosec",
+        "irc-contacts": [
+            "jeff",
+            "april"
+        ]
+    },
+    "bugs": {
+        "list": "https://github.com/mozilla/riskHeatMap/issues",
+        "report": "https://github.com/mozilla/riskHeatMap/issues"
+    },
+    "urls": {
+        "prod": "http://riskheatmap.security.mozilla.org/",
+        "stage": "http://riskheatmap.security.allizom.org/"
+    },
+    "keywords": [
+        "python",
+        "jquery",
+        "three.js"    ]
+}

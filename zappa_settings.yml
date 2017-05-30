@@ -1,0 +1,14 @@
+---
+dev:
+  app_function: hello_world.app
+  aws_region: us-west-1
+  profile_name: devadmin
+  s3_bucket: zappa-jtkc9sfo6
+  domain: riskheatmap.security.allizom.org
+  environment_variables:
+    ENVIRONMENT: Production
+    LOGGING: "True"
+    OIDC_DOMAIN: auth.mozilla.auth0.com
+    SERVER_NAME: 0q3cr9qky4.execute-api.us-west-1.amazonaws.com
+    PERMANENT_SESSION: "True"
+    PERMANENT_SESSION_LIFETIME: "900"

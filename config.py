@@ -3,12 +3,15 @@
 
 import os
 import credstash
+import logging
+
+blogger=credstash.botocore.logging.getLogger()
 
 class Config(object):
     """Defaults"""
-    DEBUG=True
+    blogger.setLevel(logging.INFO)    
+    DEBUG=False
     TESTING=False
-    #SECRET_KEY=os.environ['SECRET_KEY']
     SECRET_KEY = credstash.getSecret(
         name="riskheatmap.secret_key",
         context={'app': 'riskheatmap'},
@@ -18,7 +21,9 @@ class Config(object):
     PERMANENT_SESSION = os.environ['PERMANENT_SESSION']
     PERMANENT_SESSION_LIFETIME = int(os.environ['PERMANENT_SESSION_LIFETIME'])
     SESSION_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_SECURE = False
     LOGGER_NAME = "riskheatmap"
+
  
     
 class ProductionConfig(Config):
@@ -28,6 +33,7 @@ class ProductionConfig(Config):
 class DevelopmentConfig(Config):
     DEVELOPMENT = True
     DEBUG = False
+    blogger.setLevel(logging.DEBUG)
 
 
 class TestingConfig(Config):

@@ -1,0 +1,20 @@
+[[source]]
+url = "https://pypi.python.org/simple"
+verify_ssl = true
+
+[dev-packages]
+awscli = "*"
+pylint = "*"
+autopep8 = "*"
+ipython = "*"
+Flask-Bootstrap = "*"
+Flask-Login = "*"
+Flask-pyoidc = "*"
+Werkzeug = "*"
+
+[packages]
+zappa = "*"
+credstash = "*"
+boto = "*"
+flask-secure-headers = "*"
+Flask = "*"

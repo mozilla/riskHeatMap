@@ -1,0 +1,72 @@
+.grade {
+    border: solid 3px;
+    border-radius: .25em;
+    color: white;
+    display: inline-block;
+    font-weight: 600;
+    margin: .1em;
+    min-width: 3em;
+    padding: .25em;
+}
+
+body > .popover {
+    max-width: 30em;
+    min-width: 18em;
+}
+
+body > .popover .popover-content > div:not(:last-child) {
+    padding-bottom: 1em;
+}
+
+span[data-pass="True"], span[data-grade="A+"], span[data-grade="A"], span[data-grade="A-"] {
+    background: hsl(132, 75%, 31%);
+    border-color: hsl(132, 75%, 24%);
+}
+span[data-grade="B+"], span[data-grade="B"], span[data-grade="B-"] {
+    background: hsl(211, 29%, 41%);
+    border-color: hsl(211, 29%, 34%);
+}
+
+span[data-grade="C+"], span[data-grade="C"], span[data-grade="C-"],
+span[data-grade="D+"], span[data-grade="D"], span[data-grade="D-"] {
+    background: hsl(45, 100%, 66%);
+    border-color: hsl(45, 100%, 36%);
+    color: hsl(45, 100%, 17%);
+}
+
+span[data-pass="False"], span[data-grade="F"] {
+    background: hsl(5, 62%, 52%);
+    border-color: hsl(5, 62%, 45%);
+}
+
+span[data-pass="None"], span[data-grade="None"] {
+    background: #777;
+    border-color: #555;
+}
+
+.table-group tr td:nth-child(1) {
+    vertical-align: middle;
+    width: 19.5em;
+}
+
+.table-group tr td:nth-child(2):hover {
+    cursor: pointer;
+}
+
+.table-group tr td:nth-child(2), .table-group tr td:nth-child(3) {
+    vertical-align: middle;
+    width: 1em;
+}
+
+.table-group tr td:nth-child(12) {
+     border-left: solid 2px #dddddd;
+}
+
+#dashboard-date {
+    margin-bottom: 1em;
+}
+
+#filter-sites {
+    margin-top: 1.5em;
+    width: 20em;
+}

@@ -1,0 +1,51 @@
+---
+dev:
+  project_name: riskheatmap
+  role_name: riskheatmap-zappa
+  apigateway_description: RiskHeatMapZappaRole
+  lambda_description: riskheatmap lambda function hosting the flask app
+  app_function: app.app
+  aws_region: us-west-1
+  profile_name: devadmin
+  s3_bucket: riskheatmap-zappa-dev
+  domain: riskheatmap.security.allizom.org
+  log_level: DEBUG
+  use_precompiled_packages: false
+  attach_policy: attach_policy.json
+  environment_variables:
+    ENVIRONMENT: Production
+    LOGGING: "True"
+    OIDC_DOMAIN: auth.mozilla.auth0.com
+    SERVER_NAME: riskheatmap.security.allizom.org
+    PERMANENT_SESSION: "True"
+    PERMANENT_SESSION_LIFETIME: "900"
+    RISKS_BUCKET_NAME: infosec-risk-data-dev
+    RISKS_KEY_NAME: risks.json
+    DASHBOARD_BUCKET_NAME: infosec-observatory-dashboard-dev
+    DASHBOARD_KEY_NAME: index.html
+prod:
+  project_name: riskheatmap
+  role_name: RiskHeatMapZappaRole
+  apigateway_description: riskheatmap-zappa
+  lambda_description: riskheatmap lambda function hosting the flask app
+  app_function: app.app
+  aws_region: us-west-1
+  profile_name: prodadmin
+  s3_bucket: riskheatmap-zappa
+  domain: riskheatmap.security.mozilla.org
+  log_level: DEBUG
+  use_precompiled_packages: false
+  attach_policy: attach_policy.json
+  environment_variables:
+    ENVIRONMENT: Production
+    LOGGING: "True"
+    OIDC_DOMAIN: auth.mozilla.auth0.com
+    SERVER_NAME: riskheatmap.security.mozilla.org
+    PERMANENT_SESSION: "True"
+    PERMANENT_SESSION_LIFETIME: "900"
+    RISKS_BUCKET_NAME: infosec-risk-data
+    RISKS_KEY_NAME: risks.json
+    DASHBOARD_BUCKET_NAME: infosec-observatory-dashboard
+    DASHBOARD_KEY_NAME: index.html
+    SESSION_COOKIE_HTTPONLY: "True"
+    SESSION_COOKIE_SECURE: "False"

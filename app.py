@@ -136,11 +136,18 @@ def info():
 )
 
 @app.route('/')
+@sh.wrapper()
 def main_page():
     return render_template("main_page.html")
 
+@app.route("/contribute.json")
+@sh.wrapper()
+def contribute_json():
+    return send_from_directory('heatmap/','contribute.json')
+
 @app.route("/heatmap/risks.json")
 @oidc.oidc_auth
+@sh.wrapper()
 def risks_json():
     conn=boto.connect_s3()
     bucket=conn.get_bucket(os.environ['RISKS_BUCKET_NAME'], validate=False)
@@ -152,6 +159,7 @@ def risks_json():
 
 @app.route("/heatmap/<path:filename>")
 @oidc.oidc_auth
+@sh.wrapper()
 def heatmap_file(filename):
     return send_from_directory('heatmap/',
                                filename)

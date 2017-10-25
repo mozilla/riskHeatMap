@@ -8,9 +8,11 @@ showInfoPanel = function() {
 
 clearInfoPanel = function() {
 	d3.select("#serviceName").node().innerText="";
+	d3.select("#assetsLayer").select("*").remove();
 	d3.select("#rraLayer").select("*").remove();
-	d3.select("#webLayer").select("*").remove();
-	d3.select("#osLayer").select("*").remove();
+	d3.select("#webCompliance").select("*").remove();
+	d3.select("#webVulnerabilities").select("*").remove();
+	d3.select("#osCompliance").select("*").remove();
 	d3.select("#osVulnerabilities").select("*").remove();
 	d3.select("#platformLayer").select("*").remove();
 	d3.select("#threatLayer").select("*").remove();
@@ -223,6 +225,7 @@ d3.json("risks.json", function(error, jsondata) {
 	//window.operators=operators;
 	//window.owners=owners;
 	//window.names=names;
+	window.risks=risks;
 	//with the list of risk scores in the data,
 	//setup a d3 scale to size the boxes on the heatmap accordingly.
 	riskScale=d3.scale.linear()
@@ -484,114 +487,130 @@ d3.json("risks.json", function(error, jsondata) {
 						.text(d[0] + ": " + d[1]);
 					}
 				});
+				//setup the sub panes
+				//where the asset info will go
+				d3.select("#osVulnerabilities")
+				.append("ul")
+				.classed('osVulnerabilitiesList',true);	
 
-				//vulnerability/compliance data?
-				if ( target.record.rra.supporting_system_groups !== undefined ) {
-					d3.select("#osVulnerabilities")
-					.append("ul")
-					.classed('osVulnerabilitiesList',true);
+				d3.select("#osCompliance")
+				.append("ul")
+				.classed('osComplianceList',true);
+				
+				d3.select("#webCompliance")
+				.append("ul")
+				.classed('webComplianceRatings',true);
 
-					d3.select("#osLayer")
-					.append("ul")
-					.classed('osComplianceList',true);
-					
-					d3.select("#webLayer")
-					.append("ul")
-					.classed('webLayerRatings',true);
+				d3.select("#webVulnerabilities")
+				.append("ul")
+				.classed('webVulnerabilityRatings',true);
+				
+				d3.select("#assetsLayer")
+				.append("ul")
+				.classed('assetsLayerList',true);				
 
-					target.record.rra.supporting_system_groups.forEach(function(d,i){
-						//add the system group name to the vulns and compliance sections
-						if (_.has(d,"name")) {
-							d3.select(".osVulnerabilitiesList")
+				//for each asset making up a service,
+				_.find(target.record.rra.asset_groups).assets.forEach(function(asset,asset_index){
+
+					if (_.has(asset,"asset_identifier")) {
+						d3.select(".assetsLayerList")
+						.append("li")
+						.classed('systemGroup',true)
+						.text(asset.asset_identifier +': ' + asset.asset_type);
+					};
+
+					//for each indicator in this asset
+					asset.indicators.forEach(function(indicator,index){
+
+						//add event_source "MIG Compliance" to OS compliance
+						if ( indicator.event_source == 'MIG compliance' ) {
+							dTable = d3.select(".osComplianceList")
 							.append("li")
-							.classed('systemGroup',true)
-							.text(d.name + ':');
+							.append("table");
 
-							d3.select(".osComplianceList")
+							dTable.append("thead")
+								.append("th")
+								.attr("colspan","5")
+								.html(asset.asset_identifier);
+
+							tbody=dTable.append("tbody");
+							indicator.details.forEach(function(detail,details_index){
+								var rows = tbody.append("tr");
+
+								var columns = rows.selectAll("td")
+									.data(_.pairs(detail))
+									.enter().append("td")
+									.html(function(d){return d[0] + ': ' + d[1];});
+							});
+						}//end MIG Compliance
+
+						//add event_source "scanapi" to OS Vulns
+						if ( indicator.event_source == 'scanapi' ) {
+							dTable = d3.select(".osVulnerabilitiesList")
 							.append("li")
-							.classed('systemGroup',true)
-							.text(d.name + ':');
-						}
+							.append("table");
 
-						if ( d.hosts !== undefined ) {
-							//for each host, summarize the vulns and compliance
-							d.hosts.forEach(function(host,i){
-								hostname='unknown'
-								if (_.has(host,"hostname") && _.has(host,"vulnerabilities")) {
-									vulnTable = d3.select(".osVulnerabilitiesList")
-									.append("li")
-									.append("table")
+							dTable.append("thead")
+								.append("th")
+								.attr("colspan","5")
+								.html(asset.asset_identifier);
 
-									vulnTable.append("thead")
-										.append("th")
-										.attr("colspan","5")
-										.html(host.hostname);
+							tbody=dTable.append("tbody");
+							rows = tbody.append("tr");
 
-									tbody=vulnTable.append("tbody");
-									var rows = tbody.selectAll("tr")
-										.data([host])
-										.enter()
-										.append("tr");
+							var columns = rows.selectAll("td")
+								.data(_.pairs(indicator.details))
+								.enter().append("td")
+								.html(function(d){return d[0] + ': ' + d[1];});
+						}//end scanapi							
 
-									var columns = rows.selectAll("td")
-										.data(_.pairs(_.omit(host.vulnerabilities,'last90days')))  //remove the sub object
-										.enter().append("td")
-										.html(function(d){return d[0] + ': ' + d[1];});
-								}
+						//add event_source "Mozilla Observatory" to Web compliance
+						if ( indicator.event_source == 'Mozilla Observatory' ) {
+							//for each host, summarize
+							dTable = d3.select(".webComplianceRatings")
+							.append("li")
+							.append("table");
 
-								if (_.has(host,"hostname") && _.has(host,"compliance")) {
-									complianceTable = d3.select(".osComplianceList")
-									.append("li")
-									.append("table")
+							dTable.append("thead")
+								.append("th")
+								.attr("colspan","5")
+								.html(asset.asset_identifier + ': Grade ' + indicator.details.grade);
 
-									complianceTable.append("thead")
-										.append("th")
-										.attr("colspan","5")
-										.html(host.hostname);
+							tbody=dTable.append("tbody");
+							indicator.details.tests.forEach(function(detail,detail_index){
+								var rows = tbody.append("tr");
 
-									tbody=complianceTable.append("tbody");
-									var rows = tbody.selectAll("tr")
-										.data([host])
-										.enter()
-										.append("tr");
+								var columns = rows.selectAll("td")
+									.data(_.pairs(detail))
+									.enter().append("td")
+									.html(function(d){return d[0] + ': ' + d[1];});
+							});
+						}//end Observatory
 
-									var columns = rows.selectAll("td")
-										.data(_.pairs(_.omit(host.compliance,'details'))) //remove details sub object.
-										.enter().append("td")
-										.html(function(d){return d[0] + ': ' + d[1];});
-								}
-							});//end hosts
-						}//end hosts exists
-						
-						if ( d.websites !== undefined ) {
-							//for each website show the rankings
-							d.websites.forEach(function(site,i){
-								if (_.has(site,"hostname") && _.has(site,"http_observatory")) {
-									complianceTable = d3.select(".webLayerRatings")
-									.append("li")
-									.append("table")
+						//add event_source "ZAP DAST scan" to: Web vulns
+						if ( indicator.event_source == 'ZAP DAST scan' ) {
+							//for each host, summarize
+							dTable = d3.select(".webVulnerabilityRatings")
+							.append("li")
+							.append("table");
 
-									complianceTable.append("thead")
-										.append("th")
-										.attr("colspan","5")
-										.html(site.hostname);
+							dTable.append("thead")
+								.append("th")
+								.attr("colspan","5")
+								.html(asset.asset_identifier + ': ZAP Findings ');
 
-									tbody=complianceTable.append("tbody");
-									var rows = tbody.selectAll("tr")
-										.data([site])
-										.enter()
-										.append("tr");
+							tbody=dTable.append("tbody");
+							indicator.details.forEach(function(detail,detail_index){
+								var rows = tbody.append("tr");
 
-									var columns = rows.selectAll("td")
-										.data(_.pairs(_.omit(site.http_observatory,'coverage'))) //remove details sub object.
-										.enter().append("td")
-										.html(function(d){return d[0] + ': ' + d[1];});
-								}
-							});//end website details
-						} //end  websites
-
-					});
-				} //end we have vuln/compliance data
+								var columns = rows.selectAll("td")
+									.data(_.pairs(detail))
+									.enter().append("td")
+									.html(function(d){return d[0] + ': ' + d[1];});
+							});
+						}//end ZAP DAST Scan
+					}); //end indicators
+				});	//end target assets for each
 			} //end mouse intersected a box
 		} //end onMouseDblClick
 

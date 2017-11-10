@@ -682,16 +682,25 @@ d3.json("risks.json", function(error, jsondata) {
 				if ( element.record != undefined) {
 					//it's a cube and we should set opacity
 					
-					if (name.length >1 && element.record.rra.name.indexOf(name) == -1) {
+					//hide any cube where we don't match a filter, or the filtered field is undefined
+					if (name.length >1 
+						&& ( _.isUndefined(element.record.rra.name)
+							|| element.record.rra.name.indexOf(name) == -1)) {
 						element.material.opacity=.001;
 					}
-					if ( developer.length >1 && element.record.rra.rra_details.details.metadata.developer.indexOf(developer) == -1 ){
+					if ( developer.length >1 
+						&& ( _.isUndefined(element.record.rra.rra_details.details.metadata.developer)
+							  || element.record.rra.rra_details.details.metadata.developer.indexOf(developer) == -1 )){
 						element.material.opacity=.001;
 					}
-					if ( owner.length > 1 && element.record.rra.rra_details.details.metadata.owner.indexOf(owner) == -1 ){
+					if ( owner.length > 1 
+						&& ( _.isUndefined(element.record.rra.rra_details.details.metadata.owner)
+							|| element.record.rra.rra_details.details.metadata.owner.indexOf(owner) == -1 )){
 						element.material.opacity=.001;
 					}
-					if ( operator.length > 1 && element.record.rra.rra_details.details.metadata.operator.indexOf(operator) ==-1 ){
+					if ( operator.length > 1 
+						&& ( _.isUndefined(element.record.rra.rra_details.details.metadata.operator)
+							|| element.record.rra.rra_details.details.metadata.operator.indexOf(operator) ==-1 )){
 						element.material.opacity=.001;
 					}
 				}

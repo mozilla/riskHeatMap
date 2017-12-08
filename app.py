@@ -131,8 +131,7 @@ def info():
     """Return the JSONified user session for debugging."""
     return jsonify(
         id_token=session['id_token'],
-        access_token=session['access_token'],
-        userinfo=session['userinfo']
+        access_token=session['access_token']
 )
 
 @app.route('/')

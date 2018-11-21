@@ -24,41 +24,28 @@ from flask_pyoidc.flask_pyoidc import OIDCAuthentication
 from flask_pyoidc.provider_configuration import ProviderConfiguration, ClientMetadata
 from flask_pyoidc.user_session import UserSession
 
-#setup the app
+# setup the app
 app = Flask(__name__)
 Bootstrap(app)
 
-#logging
+# logging
 logger = logging.getLogger(__name__)
 if os.environ.get('LOGGING') == 'True':
     logging.basicConfig(level=logging.INFO)
 
 
-#config
+# config
 logger.info("Choosing config")
-if os.environ.get('ENVIRONMENT') == 'Production':
-    # Only cloudwatch log when app is in production mode.
-    #handler = watchtower.CloudWatchLogHandler()
-    handler = logging.StreamHandler()
+if 'prod' in os.environ.get('ENVIRONMENT').lower():
     logger.info("Using production config")
-    app.logger.addHandler(handler)
     app.config.from_object(config.ProductionConfig())
 else:
     # Only log flask debug in development mode.
     logger.info("Using development config")
     logging.basicConfig(level=logging.DEBUG)
-    handler = logging.StreamHandler()
-    logging.getLogger("werkzeug").addHandler(handler)
     app.config.from_object(config.DevelopmentConfig())
 
-
-#auth = OIDCAuthentication(app,client_registration_info=client_info)
-#old
-# oidc_config = config.OIDCConfig()
-# authentication = auth.OpenIDConnect(
-#     oidc_config
-# )
-# oidc = authentication.auth(app)
+# setup oidc
 oidc_config = config.OIDCConfig()
 auth0_Config=ProviderConfiguration(issuer='https://{}'.format(oidc_config.OIDC_DOMAIN),
                                     client_metadata=ClientMetadata(oidc_config.OIDC_CLIENT_ID,oidc_config.OIDC_CLIENT_SECRET)

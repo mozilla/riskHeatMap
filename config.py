@@ -9,7 +9,7 @@ blogger=credstash.botocore.logging.getLogger()
 
 class Config(object):
     """Defaults"""
-    blogger.setLevel(logging.INFO)    
+    blogger.setLevel(logging.INFO)
     DEBUG=False
     TESTING=False
     SECRET_KEY = credstash.getSecret(
@@ -23,9 +23,10 @@ class Config(object):
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SECURE = False
     LOGGER_NAME = "riskheatmap"
+    PREFERRED_URL_SCHEME = 'https'
 
- 
-    
+
+
 class ProductionConfig(Config):
     DEBUG = False
 
@@ -33,7 +34,7 @@ class ProductionConfig(Config):
 class DevelopmentConfig(Config):
     DEVELOPMENT = True
     DEBUG = False
-    blogger.setLevel(logging.DEBUG)
+    blogger.setLevel(logging.INFO)
 
 
 class TestingConfig(Config):

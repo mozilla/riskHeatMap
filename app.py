@@ -1,10 +1,8 @@
 import os
 import config
-import auth
 import logging
 import boto
 import json
-
 from flask import (
     Flask,
     redirect,
@@ -17,18 +15,18 @@ from flask import (
     jsonify
 )
 
-#flask-bootstrap
+# flask-bootstrap
 from flask_bootstrap import Bootstrap
-#flask-secure-headers
-from flask_secure_headers.core import Secure_Headers
-#flask-pyoidc
+# flask-secure-headers (when it's py3)
+#from flask_secure_headers.core import Secure_Headers
+# flask-pyoidc
 from flask_pyoidc.flask_pyoidc import OIDCAuthentication
+from flask_pyoidc.provider_configuration import ProviderConfiguration, ClientMetadata
+from flask_pyoidc.user_session import UserSession
 
-#setup the app 
+#setup the app
 app = Flask(__name__)
-#app.config.from_pyfile('env.example')
 Bootstrap(app)
-
 
 #logging
 logger = logging.getLogger(__name__)
@@ -55,69 +53,75 @@ else:
 
 
 #auth = OIDCAuthentication(app,client_registration_info=client_info)
+#old
+# oidc_config = config.OIDCConfig()
+# authentication = auth.OpenIDConnect(
+#     oidc_config
+# )
+# oidc = authentication.auth(app)
 oidc_config = config.OIDCConfig()
-
-authentication = auth.OpenIDConnect(
-    oidc_config
+auth0_Config=ProviderConfiguration(issuer='https://{}'.format(oidc_config.OIDC_DOMAIN),
+                                    client_metadata=ClientMetadata(oidc_config.OIDC_CLIENT_ID,oidc_config.OIDC_CLIENT_SECRET)
 )
-
-oidc = authentication.auth(app)
+oidc=OIDCAuthentication({'auth0':auth0_Config},app=app)
 
 #websec headers:
-sh = Secure_Headers()
+
 #laboratory says
 # default-src 'none';
 # connect-src 'self';
 # script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.3/jquery.min.js https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.5/js/bootstrap.min.js;
-# style-src 'unsafe-inline' https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.5/css/ 
-sh.update(
-    {
-        'CSP': {
-            'default-src': [
-                'self',
-            ],
-            'connect-src': [
-                'self',
-            ],
-            'script-src': [
-                'self',
-                'https://cdnjs.cloudflare.com/ajax/libs/jquery/1.12.4/jquery.min.js',
-                'https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js',
-                
-            ],
-            'style-src': [
-                'self',
-                'https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/',
-                
-            ],
-            'img-src': [
-                'self',
-            ],
-            'font-src': [
-                'self',
-                'fonts.googleapis.com',
-                'fonts.gstatic.com',
-            ]
-        }
-    }
-)
+# style-src 'unsafe-inline' https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.5/css/
+# uncomment when it's py3 capable: https://github.com/twaldear/flask-secure-headers/pull/9
+# sh = Secure_Headers()
+# sh.update(
+#     {
+#         'CSP': {
+#             'default-src': [
+#                 'self',
+#             ],
+#             'connect-src': [
+#                 'self',
+#             ],
+#             'script-src': [
+#                 'self',
+#                 'https://cdnjs.cloudflare.com/ajax/libs/jquery/1.12.4/jquery.min.js',
+#                 'https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js',
 
-sh.update(
-    {
-        'HSTS':
-            {
-                'max-age': 15768000,
-                'includeSubDomains': True,
-            }
-    }
-)
+#             ],
+#             'style-src': [
+#                 'self',
+#                 'https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/',
 
-#don't set public key pins
-sh.rewrite(
-    {
-        'HPKP': None
-    }
-)
+#             ],
+#             'img-src': [
+#                 'self',
+#             ],
+#             'font-src': [
+#                 'self',
+#                 'fonts.googleapis.com',
+#                 'fonts.gstatic.com',
+#             ]
+#         }
+#     }
+# )
+
+# sh.update(
+#     {
+#         'HSTS':
+#             {
+#                 'max-age': 15768000,
+#                 'includeSubDomains': True,
+#             }
+#     }
+# )
+
+# #don't set public key pins
+# sh.rewrite(
+#     {
+#         'HPKP': None
+#     }
+# )
 
 @app.route('/logout')
 @oidc.oidc_logout
@@ -125,29 +129,26 @@ def logout():
     return "You've been successfully logged out."
 
 @app.route('/info')
-@sh.wrapper()
-@oidc.oidc_auth
+@oidc.oidc_auth('auth0')
 def info():
     """Return the JSONified user session for debugging."""
+    oidc_session = UserSession(session)
     return jsonify(
-        id_token=session['id_token'],
-        access_token=session['access_token'],
-        userinfo=session['userinfo']
+        id_token=oidc_session['id_token'],
+        access_token=oidc_session['access_token'],
+        userinfo=oidc_session['userinfo']
 )
 
 @app.route('/')
-@sh.wrapper()
 def main_page():
     return render_template("main_page.html")
 
 @app.route("/contribute.json")
-@sh.wrapper()
 def contribute_json():
     return send_from_directory('heatmap/','contribute.json')
 
 @app.route("/heatmap/risks.json")
-@oidc.oidc_auth
-@sh.wrapper()
+@oidc.oidc_auth('auth0')
 def risks_json():
     conn=boto.connect_s3()
     bucket=conn.get_bucket(os.environ['RISKS_BUCKET_NAME'], validate=False)
@@ -158,14 +159,14 @@ def risks_json():
     #return(jsonify(dict(risks=list())),200)
 
 @app.route("/heatmap/<path:filename>")
-@oidc.oidc_auth
-@sh.wrapper()
+@oidc.oidc_auth('auth0')
 def heatmap_file(filename):
     return send_from_directory('heatmap/',
                                filename)
 
 @app.route("/observatory/index.html")
-@oidc.oidc_auth
+@app.route("/observatory/")
+@oidc.oidc_auth('auth0')
 def observatory_index():
     conn=boto.connect_s3()
     bucket=conn.get_bucket(os.environ['DASHBOARD_BUCKET_NAME'], validate=False)
@@ -175,11 +176,11 @@ def observatory_index():
     return(index,200)
 
 @app.route("/observatory/<path:filename>")
-@oidc.oidc_auth
+@oidc.oidc_auth('auth0')
 def observatory_file(filename):
     return send_from_directory('observatory/',
                                filename)
-       
+
 # We only need this for local development.
 if __name__ == '__main__':
     app.run()

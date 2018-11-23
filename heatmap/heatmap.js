@@ -222,7 +222,6 @@ d3.json("risks.json", function(error, jsondata) {
             label.rotateX(THREE.Math.degToRad(-90));
 
             scene.add(cube);
-            console.log(cube);
             scene.add(label);
 
         });
@@ -278,12 +277,21 @@ d3.json("risks.json", function(error, jsondata) {
         section = d3.select('#sections').property('value')
         data = _.map(jsondata[section],function(risk) {
             if ( section == 'services' ){
+                risk.section=section;
                 return {
                 name: risk.name,
                 record: risk,
                 score: Number(Number(risk.recommendations).toFixed()),
                 label: risk.highest_risk_impact
                 };
+            }else if (section == 'assets'){
+                risk.section=section;
+                return {
+                    name: risk.asset_identifier,
+                    record: risk,
+                    score: 0,
+                    label: 'UNKNOWN'
+                }
             }else{
                 return null;
             }
@@ -400,10 +408,10 @@ d3.json("risks.json", function(error, jsondata) {
 
                 tbody=dTable.append("tbody");
                 _.pairs(target.record).forEach(function(d,i){
-                    console.log(d)
-                    // don't display minutia like id, color
+                    // console.log(d)
+                    // don't display null values or minutia like id, color
                     // otherwise, just display key/value
-                    if ( ! _.contains(['id','color','masked','timestamp_utc'], d[0]) ){
+                    if ( d[1] && ! _.contains(['id','color','masked','timestamp_utc'], d[0]) ){
                         var rows = tbody.append("tr");
                         var columns = rows.selectAll("td")
                             .data(d)
@@ -413,7 +421,36 @@ d3.json("risks.json", function(error, jsondata) {
                                 return d;});
                     }
                 });
+                if ( target.record.section == 'assets' ){
+                    indicators = _.where(jsondata.indicators,{"asset_id": target.record.id});
+                    if ( indicators.length > 0 ){
+                        console.log(indicators);
+                        indicators.forEach(function(indicator,index){
+                            //add event_source "Mozilla Observatory" to Web compliance
+                            if ( indicator.event_source_name == 'Mozilla Observatory' ) {
+                                //for each host, summarize
+                                dTable = d3.select("#detailsLayer")
+                                .append("li")
+                                .append("table");
 
+                                dTable.append("thead")
+                                    .append("th")
+                                    .attr("colspan","5")
+                                    .html(target.record.asset_identifier + ': Grade ' + indicator.details.grade);
+
+                                tbody=dTable.append("tbody");
+                                indicator.details.tests.forEach(function(detail,detail_index){
+                                    var rows = tbody.append("tr");
+
+                                    var columns = rows.selectAll("td")
+                                        .data(_.pairs(detail))
+                                        .enter().append("td")
+                                        .html(function(d){return d[0] + ': ' + d[1];});
+                                });
+                            } // end Observatory
+                        });
+                    }
+                }
 			} //end mouse intersected a box
 		} //end onMouseDblClick
 

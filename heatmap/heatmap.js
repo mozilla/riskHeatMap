@@ -86,12 +86,11 @@ d3.json("risks.json", function(error, jsondata) {
 
 	// Lights
 	var ambientLight = new THREE.AmbientLight( 0x404040);
-	scene.add( ambientLight );
+
 	var light = new THREE.HemisphereLight( 0xffffbb, 0x080820, .5 );
-	scene.add( light );
 	var directionalLight = new THREE.DirectionalLight( 0xffffff, 0.5 );
 	directionalLight.position.set( 0, 1, 0 );
-    scene.add( directionalLight );
+
 
 	renderer = new THREE.WebGLRenderer( { alpha: true ,
         precision: 'highp',
@@ -165,29 +164,16 @@ d3.json("risks.json", function(error, jsondata) {
 	    .append('option')
         .text(function (d) { return d; });
 
-    clearGrid=function(){
+    resetScene=function(){
+        // clear the grid
         gridPositions=[];
-        scene.children.forEach(function(element,index,array) {
-            if ( element.record != undefined) {
-                //it's a cube and we should remove it
-                scene.remove(element);
-            }
-            if (element.type ==='LineSegments'){
-                // part of the grid
-                scene.remove(element);
-            }
-            if (element.type === 'Mesh'){
-                // part of a box
-                scene.remove(element);
-            }
-            if (element.type == 'Object3D'){
-                // and element.element.className='label
-                if (element.element && element.element.className && element.element.className == 'label'){
-                    scene.remove(element)
-                }
-            }
-        });
-    };
+        // clear up the scene elements
+        scene.remove.apply(scene, scene.children);
+        // add the lights back
+        scene.add( ambientLight );
+        scene.add( light );
+        scene.add( directionalLight );
+    }
 
 	populateGrid=function(){
         // for each item, make a box and put it on the grid
@@ -243,27 +229,29 @@ d3.json("risks.json", function(error, jsondata) {
     };
 
     setupGrid=function(){
-        //rows should be one more than the square root of the data length
-        //since 2 rows holds 4 squares.
-        //add one for asthetics to show the grid.
+        // figure out how big the underlying grid should be
+        // to match out data
+        // rows should be one more than the square root of the data length
+        // since 2 rows holds 4 squares.
+        // add one for asthetics to show the grid.
         rows = Math.floor(Math.sqrt(data.length))+1;
-        //grid
+        // grid
         var grid = new THREE.GridHelper((squareSize * rows),rows, 0x0000ff, 0x808080 );
         scene.add( grid );
 
-        //calc the positions on the grid in order of closest to farthest
-        //for assigning boxes by their risk
+        // calc the positions on the grid in order of closest to farthest
+        // for assigning boxes by their risk
 
         gridSize=squareSize*(rows/2);
         var maxZ = gridSize/squareSize;
         var maxX = gridSize/squareSize;
         var lastX = maxX;
         var lastZ = maxZ;
-        //console.log(maxZ,maxX,lastX,lastZ);
-        //add the starting point
+        // console.log(maxZ,maxX,lastX,lastZ);
+        // add the starting point
         gridPositions.push({x:maxX,z:maxZ});
         for (var i = maxX-1; i > maxX*-1; i--) {
-        //console.log('rows: ' + i)
+        // console.log('rows: ' + i)
         lastX=i;
 
             for (var z=lastZ;z >lastX-1;z--){
@@ -288,7 +276,6 @@ d3.json("risks.json", function(error, jsondata) {
     mapData=function(){
         // walk the data we have chosen and setup color ranges, map key elements, etc
         section = d3.select('#sections').property('value')
-        console.log(section);
         data = _.map(jsondata[section],function(risk) {
             if ( section == 'services' ){
                 return {
@@ -323,7 +310,7 @@ d3.json("risks.json", function(error, jsondata) {
         riskScale=d3.scale.linear()
             .domain([d3.min(riskScores),d3.max(riskScores)])
             .range([.5,10])
-        clearGrid();
+        resetScene();
         setupGrid();
         populateGrid();
     };

@@ -29,6 +29,12 @@
         <br>
         <div>
             <hr>
+            <div>Sections</div>
+            <select id="sections"></select>
+            <hr>
+        </div>
+        <div>
+            <hr>
             <div>Filters:</div>
             <div><button id="btnFilter" type="button" class="btn btn-default">Filter</button></div>
             <div><button id="btnClearCriteria" type="button" class="btn btn-default">Clear Criteria</button></div>
@@ -37,61 +43,18 @@
 
         <div id="nameFilter">
             <div class="filterLabel">name:</div>
-            <input class="typeahead" id="name" type="text" placeholder="name of service">
-        </div>
-        <br>        
-        
-        <div id="ownerFilter">
-            <div class="filterLabel">owner:</div>
-            <input class="typeahead" id="owner" type="text" placeholder="service owner">
+            <input class="typeahead" id="name" type="text" placeholder="name">
         </div>
         <br>
-        <div id="operatorFilter">
-            <div class="filterLabel">operator:</div>
-            <input class="typeahead" id="operator" type="text" placeholder="service operator">
-        </div>
-        <br>
-        <div id="developerFilter">
-            <div class="filterLabel">developer:</div>
-            <input class="typeahead" id="developer" type="text" placeholder="service developer">
-        </div>
     </leftnav>
     <div id="rightpanel">
         <div id="rightPanelClose"><a href="#">X</a></div>
         <div id="riskitems">
-            <p id="serviceName" class="serviceName"></p>
+            <p id="itemName" class="itemName"></p>
             <ul>
                 <li>
-                    <h3>RRA Data</h3>
-                    <div id="rraLayer"></div>
-                </li>
-                <li>
-                    <h3>Assets</h3>
-                    <div id="assetsLayer"></div>
-                </li>                
-                <li>
-                    <h3>Web Compliance</h3>
-                    <div id="webCompliance"></div>
-                </li>
-                <li>
-                    <h3>Web Vulnerabilities</h3>
-                    <div id="webVulnerabilities"></div>
-                </li>                
-                <li>
-                    <h3>OS Compliance</h3>
-                    <div id="osCompliance"></div>
-                </li>
-                <li>
-                    <h3>OS Vulnerabilities</h3>
-                    <div id="osVulnerabilities"></div>
-                </li>
-                <li>
-                    <h3>Platform</h3>
-                    <div id="platformLayer"></div>
-                </li>
-                <li>
-                    <h3>Threats</h3>
-                    <div id="threatLayer"></div>
+                    <h3>Details</h3>
+                    <div id="detailsLayer"></div>
                 </li>
             </ul>
         </div>

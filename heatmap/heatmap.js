@@ -277,6 +277,15 @@ d3.json("risks.json", function(error, jsondata) {
         }
     }
 
+    clearFilters = function(){
+        //run through the cubes and set opacity to viewable
+        scene.children.forEach(function(element,index) {
+            if (_.has(element,'record')) {
+                element.material.opacity=0.7;
+            }
+        });
+    }
+
     mapData=function(){
         // walk the data we have chosen and setup color ranges, map key elements, etc
         section = d3.select('#sections').property('value')
@@ -317,6 +326,19 @@ d3.json("risks.json", function(error, jsondata) {
             if ( riskScores.indexOf(d.score)==-1) {
                 riskScores.push(d.score);
             }
+        });
+        //reset and hook up typeahead filters
+        $('#nameFilter .typeahead').typeahead('destroy');
+        d3.select('#btnClearCriteria').on('click')();
+        d3.select('#btnFilter').node().textContent="Filter";
+        $('#nameFilter .typeahead').typeahead({
+            hint: true,
+            highlight: true,
+            minLength: 1
+        },
+        {
+            name: 'names',
+            source: substringMatcher(names)
         });
         //with the list of risk scores in the data,
         //setup a d3 scale to size the boxes on the heatmap accordingly.
@@ -499,28 +521,21 @@ d3.json("risks.json", function(error, jsondata) {
 		clearFilter=true;
 		name=d3.selectAll("#name").node().value;
 		//filtered currently?
-		btnState=btn.textContent;
-		if (btnState =='Filter') {
+        btnState=btn.textContent;
+        if (btnState=='Filter off') {
+			btn.textContent='Filter';
+		} else if (btnState =='Filter') {
 			btn.textContent='Filter off';
 			clearFilter=false;
 		}
-		if (btnState=='Filter off') {
-			btn.textContent='Filter';
-
-		}
 		if (clearFilter) {
-			//run through the cubes and set opacity to viewable
-			scene.children.forEach(function(element,index) {
-				if (_.has(element,'record')) {
-					element.material.opacity=0.7;
-				}
-			});
+			clearFilters();
 		}else{
 			//run through the cubes and set opacity to non viewable
 			scene.children.forEach(function(element,index,array) {
 				if ( element.record != undefined) {
                     //it's a cube and we should set opacity
-                    console.log(element)
+                    //console.log(element)
 
 					//hide any cube where we don't match a filter, or the filtered field is undefined
 					if (name.length >1

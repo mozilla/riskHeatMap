@@ -206,6 +206,9 @@ d3.json("risks.json", function(error, jsondata) {
                                                             } );
             var cube = new THREE.Mesh(geometry,material);
             cube.record=d.record;
+            cube.name=d.name;
+            cube.score=d.score;
+            cube.label=d.label;
             cube.scale.y = riskScale(d.score);
             cube.position.y = (cube.scale.y * boxHeight)/2 ;
             cube.position.x = (gridPositions[i].x * squareSize) - boxWidth/2;
@@ -299,7 +302,7 @@ d3.json("risks.json", function(error, jsondata) {
             }
 
           });
-        data = _.filter(data, function(d){ return _.isObject(d)});
+        //data = _.filter(data, function(d){ return _.isObject(d)});
         // sort the data by risk score
         data=_.sortBy(data, 'score');
 
@@ -516,12 +519,13 @@ d3.json("risks.json", function(error, jsondata) {
 			//run through the cubes and set opacity to non viewable
 			scene.children.forEach(function(element,index,array) {
 				if ( element.record != undefined) {
-					//it's a cube and we should set opacity
+                    //it's a cube and we should set opacity
+                    console.log(element)
 
 					//hide any cube where we don't match a filter, or the filtered field is undefined
 					if (name.length >1
-						&& ( _.isUndefined(element.record.rra.name)
-							|| element.record.rra.name.indexOf(name) == -1)) {
+						&& ( _.isUndefined(element.name)
+							|| element.name.indexOf(name) == -1)) {
 						element.material.opacity=.001;
 					}
 				}

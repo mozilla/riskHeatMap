@@ -153,11 +153,13 @@ d3.json("risks.json", function(error, jsondata) {
     var gridPositions=[];
     data=[];
     // debug
-    window.data=data;
-    window.jsondata=jsondata;
+    //window.data=data;
+    //window.jsondata=jsondata;
 
-	// build the item selections
-    riskSections= _.keys(jsondata);
+    // build the item selections
+    // omit the 'indicator' detail in the pull down
+    riskSections= _.keys(_.omit(jsondata,'indicators'));
+
     var options = d3.select('#sections')
         .selectAll('option')
 	    .data(riskSections).enter()
@@ -424,7 +426,7 @@ d3.json("risks.json", function(error, jsondata) {
                 if ( target.record.section == 'assets' ){
                     indicators = _.where(jsondata.indicators,{"asset_id": target.record.id});
                     if ( indicators.length > 0 ){
-                        console.log(indicators);
+                        // console.log(indicators);
                         indicators.forEach(function(indicator,index){
                             //add event_source "Mozilla Observatory" to Web compliance
                             if ( indicator.event_source_name == 'Mozilla Observatory' ) {

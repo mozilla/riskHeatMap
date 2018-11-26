@@ -17,12 +17,12 @@ from flask import (
 
 # flask-bootstrap
 from flask_bootstrap import Bootstrap
-# flask-secure-headers (when it's py3)
-#from flask_secure_headers.core import Secure_Headers
 # flask-pyoidc
 from flask_pyoidc.flask_pyoidc import OIDCAuthentication
 from flask_pyoidc.provider_configuration import ProviderConfiguration, ClientMetadata
 from flask_pyoidc.user_session import UserSession
+# headers
+from decorators import add_response_headers
 
 # setup the app
 app = Flask(__name__)

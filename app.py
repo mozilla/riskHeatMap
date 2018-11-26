@@ -51,7 +51,7 @@ auth0_Config=ProviderConfiguration(issuer='https://{}'.format(oidc_config.OIDC_D
 oidc=OIDCAuthentication({'auth0':auth0_Config},app=app)
 
 #websec headers:
-headers= {'Content-Security-Policy': ("default-src 'self'; connect-src 'self'; font-src 'self' https://fonts.gstatic.com; img-src 'self'; script-src 'self' ; style-src 'self' https://fonts.googleapis.com/;")}
+headers= {'Content-Security-Policy': ("default-src 'self'; form-action 'self'; connect-src 'self'; font-src 'self' https://fonts.gstatic.com; img-src 'self'; script-src 'self' ; style-src 'self' https://fonts.googleapis.com/;")}
 
 @app.route('/')
 @add_response_headers(headers=headers)
@@ -61,7 +61,7 @@ def main_page():
 @app.route("/contribute.json")
 @add_response_headers(headers=headers)
 def contribute_json():
-    return send_from_directory('heatmap/','contribute.json')
+    return send_from_directory('heatmap/','contribute.json',mimetype="application/json")
 
 @app.route("/heatmap/risks.json")
 @oidc.oidc_auth('auth0')

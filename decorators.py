@@ -27,6 +27,7 @@ def add_response_headers(headers=None, default_headers=None, cors=False):
             'X-Frame-Options': 'DENY',
             'X-XSS-Protection': '1; mode=block',
         }
+
     headers=merge_two_dicts(default_headers,headers)
 
     def decorator(fn):

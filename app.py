@@ -15,8 +15,6 @@ from flask import (
     jsonify
 )
 
-# flask-bootstrap
-from flask_bootstrap import Bootstrap
 # flask-pyoidc
 from flask_pyoidc.flask_pyoidc import OIDCAuthentication
 from flask_pyoidc.provider_configuration import ProviderConfiguration, ClientMetadata
@@ -26,7 +24,7 @@ from decorators import add_response_headers
 
 # setup the app
 app = Flask(__name__)
-Bootstrap(app)
+
 
 # logging
 logger = logging.getLogger(__name__)
@@ -53,76 +51,21 @@ auth0_Config=ProviderConfiguration(issuer='https://{}'.format(oidc_config.OIDC_D
 oidc=OIDCAuthentication({'auth0':auth0_Config},app=app)
 
 #websec headers:
-
-#laboratory says
-# default-src 'none';
-# connect-src 'self';
-# script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.3/jquery.min.js https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.5/js/bootstrap.min.js;
-# style-src 'unsafe-inline' https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.5/css/
-# uncomment when it's py3 capable: https://github.com/twaldear/flask-secure-headers/pull/9
-# sh = Secure_Headers()
-# sh.update(
-#     {
-#         'CSP': {
-#             'default-src': [
-#                 'self',
-#             ],
-#             'connect-src': [
-#                 'self',
-#             ],
-#             'script-src': [
-#                 'self',
-#                 'https://cdnjs.cloudflare.com/ajax/libs/jquery/1.12.4/jquery.min.js',
-#                 'https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js',
-
-#             ],
-#             'style-src': [
-#                 'self',
-#                 'https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/',
-
-#             ],
-#             'img-src': [
-#                 'self',
-#             ],
-#             'font-src': [
-#                 'self',
-#                 'fonts.googleapis.com',
-#                 'fonts.gstatic.com',
-#             ]
-#         }
-#     }
-# )
-
-# sh.update(
-#     {
-#         'HSTS':
-#             {
-#                 'max-age': 15768000,
-#                 'includeSubDomains': True,
-#             }
-#     }
-# )
-
-# #don't set public key pins
-# sh.rewrite(
-#     {
-#         'HPKP': None
-#     }
-# )
-
+headers= {'Content-Security-Policy': ("default-src 'self'; connect-src 'self'; font-src 'self' https://fonts.gstatic.com; img-src 'self'; script-src 'self' ; style-src 'self' https://fonts.googleapis.com/;")}
 
 @app.route('/')
+@add_response_headers(headers=headers)
 def main_page():
     return render_template("main_page.html")
 
 @app.route("/contribute.json")
-@add_response_headers()
+@add_response_headers(headers=headers)
 def contribute_json():
     return send_from_directory('heatmap/','contribute.json')
 
 @app.route("/heatmap/risks.json")
 @oidc.oidc_auth('auth0')
-@add_response_headers()
+@add_response_headers(headers=headers)
 def risks_json():
     conn=boto.connect_s3()
     bucket=conn.get_bucket(os.environ['RISKS_BUCKET_NAME'], validate=False)
@@ -134,7 +77,7 @@ def risks_json():
 
 @app.route("/heatmap/<path:filename>")
 @oidc.oidc_auth('auth0')
-@add_response_headers()
+@add_response_headers(headers=headers)
 def heatmap_file(filename):
     return send_from_directory('heatmap/',
                                filename)
@@ -142,7 +85,7 @@ def heatmap_file(filename):
 @app.route("/observatory/index.html")
 @app.route("/observatory/")
 @oidc.oidc_auth('auth0')
-@add_response_headers()
+@add_response_headers(headers=headers)
 def observatory_index():
     conn=boto.connect_s3()
     bucket=conn.get_bucket(os.environ['DASHBOARD_BUCKET_NAME'], validate=False)
@@ -153,9 +96,15 @@ def observatory_index():
 
 @app.route("/observatory/<path:filename>")
 @oidc.oidc_auth('auth0')
-@add_response_headers()
+@add_response_headers(headers=headers)
 def observatory_file(filename):
     return send_from_directory('observatory/',
+                               filename)
+
+@app.route("/css/<path:filename>")
+@add_response_headers(headers=headers)
+def css_file(filename):
+    return send_from_directory('css/',
                                filename)
 
 # We only need this for local development.

@@ -110,32 +110,19 @@ oidc=OIDCAuthentication({'auth0':auth0_Config},app=app)
 #     }
 # )
 
-@app.route('/logout')
-@oidc.oidc_logout
-def logout():
-    return "You've been successfully logged out."
-
-@app.route('/info')
-@oidc.oidc_auth('auth0')
-def info():
-    """Return the JSONified user session for debugging."""
-    oidc_session = UserSession(session)
-    return jsonify(
-        id_token=oidc_session['id_token'],
-        access_token=oidc_session['access_token'],
-        userinfo=oidc_session['userinfo']
-)
 
 @app.route('/')
 def main_page():
     return render_template("main_page.html")
 
 @app.route("/contribute.json")
+@add_response_headers()
 def contribute_json():
     return send_from_directory('heatmap/','contribute.json')
 
 @app.route("/heatmap/risks.json")
 @oidc.oidc_auth('auth0')
+@add_response_headers()
 def risks_json():
     conn=boto.connect_s3()
     bucket=conn.get_bucket(os.environ['RISKS_BUCKET_NAME'], validate=False)
@@ -147,6 +134,7 @@ def risks_json():
 
 @app.route("/heatmap/<path:filename>")
 @oidc.oidc_auth('auth0')
+@add_response_headers()
 def heatmap_file(filename):
     return send_from_directory('heatmap/',
                                filename)
@@ -154,6 +142,7 @@ def heatmap_file(filename):
 @app.route("/observatory/index.html")
 @app.route("/observatory/")
 @oidc.oidc_auth('auth0')
+@add_response_headers()
 def observatory_index():
     conn=boto.connect_s3()
     bucket=conn.get_bucket(os.environ['DASHBOARD_BUCKET_NAME'], validate=False)
@@ -164,6 +153,7 @@ def observatory_index():
 
 @app.route("/observatory/<path:filename>")
 @oidc.oidc_auth('auth0')
+@add_response_headers()
 def observatory_file(filename):
     return send_from_directory('observatory/',
                                filename)

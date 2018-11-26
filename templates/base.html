@@ -1,8 +1,13 @@
-{% extends "bootstrap/base.html" %}
-{% set application_name = config['app_name'] %}
-{% block title %}{{ application_name }}{% endblock %}
-{% block body_attribs %} style="padding-top: 60px"{% endblock %}
-{% block navbar %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Risk Heatmap</title>
+    <meta charset="utf-8">
+    <meta content="text/html" http-equiv="Content-Type">
+    <meta content="utf-8" http-equiv="encoding">
+    <link rel="stylesheet" href="/css/bootstrap-3.3.6.min.css" type="text/css" />
+</head>
+<body>
     <nav class="navbar navbar-inverse navbar-fixed-top">
       <div class="container">
         <div class="navbar-header">
@@ -18,14 +23,9 @@
           <ul class="nav navbar-nav">
             <li><a href="{{ url_for('heatmap_file', filename='heatmap.html')}}">Risk Heatmap</a></li>
             <li><a href="observatory/">Observatory Dashboard</a></li>
-            <li><a href="{{ url_for('logout') }}">Logout</a></li>
           </ul>
         </div><!--/.nav-collapse -->
       </div>
     </nav>
-  <span>
-  {% endblock %}
-  {% block content %}
-  </span>
-{% endblock %}
-    
+  </body>
+</html>

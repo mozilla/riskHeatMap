@@ -295,7 +295,7 @@ d3.json("risks.json", function(error, jsondata) {
                 return {
                 name: risk.name,
                 record: risk,
-                score: Number(Number(risk.recommendations).toFixed()),
+                score: Number(Number(risk.score).toFixed()),
                 label: risk.highest_risk_impact
                 };
             }else if (section == 'assets'){
@@ -303,7 +303,7 @@ d3.json("risks.json", function(error, jsondata) {
                 return {
                     name: risk.asset_identifier,
                     record: risk,
-                    score: 0,
+                    score: risk.score,
                     label: 'UNKNOWN'
                 }
             }else{

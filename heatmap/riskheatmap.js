@@ -160,7 +160,9 @@ d3.json("risks.json", function(error, jsondata) {
 
     // build the item selections
     // omit the 'indicator' detail in the pull down
-    riskSections= _.keys(_.omit(jsondata,'indicators'));
+    //riskSections= _.keys(_.omit(jsondata,'indicators'));
+    // order the sections the way we want them to default
+    riskSections =[ "services", "assets" ]
 
     var options = d3.select('#sections')
         .selectAll('option')
@@ -294,11 +296,15 @@ d3.json("risks.json", function(error, jsondata) {
         data = _.map(jsondata[section],function(risk) {
             if ( section == 'services' ){
                 risk.section=section;
+                risklabel='unknown'
+                if ( risk.highest_risk_impact ){
+                    risklabel=risk.highest_risk_impact.toLowerCase().trim()
+                }
                 return {
                 name: risk.name,
                 record: risk,
                 score: Number(Number(risk.score).toFixed()),
-                label: risk.highest_risk_impact
+                label: risklabel
                 };
             }else if (section == 'assets'){
                 risk.section=section;
@@ -306,7 +312,7 @@ d3.json("risks.json", function(error, jsondata) {
                     name: risk.asset_identifier,
                     record: risk,
                     score: risk.score,
-                    label: 'UNKNOWN'
+                    label: 'unknown'
                 }
             }else{
                 return null;

@@ -47,7 +47,9 @@ function toDegrees(rad) {
 }
 
 d3.json("risks.json", function(error, jsondata) {
-	console.log(error);
+    if ( error ){
+        console.log(error);
+    }
 
     // three.js initialization
 	var camera, renderer, controls;

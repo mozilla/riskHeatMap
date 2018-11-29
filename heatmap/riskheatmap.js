@@ -46,6 +46,15 @@ function toDegrees(rad) {
     return rad * (180/Math.PI);
 }
 
+function isUrl(str) {
+    try {
+        new URL(str);
+        return true;
+    } catch (e) {
+        return false;
+    }
+}
+
 d3.json("risks.json", function(error, jsondata) {
     if ( error ){
         console.log(error);
@@ -179,6 +188,10 @@ d3.json("risks.json", function(error, jsondata) {
         scene.add( ambientLight );
         scene.add( light );
         scene.add( directionalLight );
+        // reset our view
+        controls.reset();
+        clearInfoPanel();
+        hideInfoPanel();
     }
 
 	populateGrid=function(){
@@ -353,6 +366,7 @@ d3.json("risks.json", function(error, jsondata) {
         riskScale=d3.scale.linear()
             .domain([d3.min(riskScores),d3.max(riskScores)])
             .range([.5,10])
+
         resetScene();
         setupGrid();
         populateGrid();
@@ -453,7 +467,13 @@ d3.json("risks.json", function(error, jsondata) {
                             .enter().append("td")
                             .classed('firstUpper',true)
                             .html(function(d){
-                                return d;});
+                                if ( isUrl(d) ){
+                                    return '<a target="_blank" href="' + d + '">' + "Link</a>"
+
+                                }else{
+                                    return d;
+                                }
+                            });
                     }
                 });
                 if ( target.record.section == 'assets' ){

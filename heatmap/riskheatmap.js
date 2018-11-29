@@ -503,6 +503,24 @@ d3.json("risks.json", function(error, jsondata) {
                                         .html(function(d){return d[0] + ': ' + d[1];});
                                 });
                             } // end Observatory
+                            if ( indicator.event_source_name == 'scanapi' ) {
+                                dTable = d3.select("#detailsLayer")
+                                .append("li")
+                                .append("table");
+
+                                dTable.append("thead")
+                                    .append("th")
+                                    .attr("colspan","5")
+                                    .html(target.record.asset_identifier);
+
+                                tbody=dTable.append("tbody");
+                                rows = tbody.append("tr");
+
+                                var columns = rows.selectAll("td")
+                                    .data(_.pairs(indicator.details))
+                                    .enter().append("td")
+                                    .html(function(d){return d[0] + ': ' + d[1];});
+                            }//end scanapi
                         });
                     }
                 }

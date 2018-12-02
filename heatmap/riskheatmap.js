@@ -155,9 +155,10 @@ d3.json("risks.json", function(error, jsondata) {
 		{name: 'unknown',  color: '#ffffff'},
     ];
     var defaultColors = d3.scale.category20c();
-	var riskLabels =[];
     var riskScores= [];
     var riskScale;
+    var visibilityScores=[];
+    var visibilityScale;
 	var risks=[];
     var names=[];
     var rows=[];
@@ -166,18 +167,6 @@ d3.json("risks.json", function(error, jsondata) {
     // debug
     //window.data=data;
     //window.jsondata=jsondata;
-
-    // build the item selections
-    // omit the 'indicator' detail in the pull down
-    //riskSections= _.keys(_.omit(jsondata,'indicators'));
-    // order the sections the way we want them to default
-    riskSections =[ "services", "assets" ]
-
-    var options = d3.select('#sections')
-        .selectAll('option')
-	    .data(riskSections).enter()
-	    .append('option')
-        .text(function (d) { return d; });
 
     resetScene=function(){
         // clear the grid
@@ -201,9 +190,9 @@ d3.json("risks.json", function(error, jsondata) {
             // start with a safe choice from the template
             riskColor = d3.hcl(defaultColors(i));
 
-            //set the color according to the worse case risk name from our list of riskColors
+            //set the color according to the impact name from our list of riskColors
             try {
-                aColor=_.findWhere(riskColors, {name: d.label});
+                aColor=_.findWhere(riskColors, {name: d.impact_score});
                 if ( ! _.isUndefined(aColor)) {
                     riskColor=d3.hcl(aColor.color)
                 }
@@ -211,22 +200,25 @@ d3.json("risks.json", function(error, jsondata) {
                 console.log(e)
             }
 
-            //lighten by risk score
-            scaleColor=riskColor.brighter(d.score);
+            // change color by risk score?
+            // scaleColor=riskColor.brighter(d.risk_score);
+            scaleColor=riskColor;
             d.record.color=scaleColor.toString();
 
             //set the material using the color
+            //opacity: .7
             var material = new THREE.MeshPhongMaterial( { color: scaleColor.toString(),
-                                                            opacity: .7,
+                                                            opacity: visibilityScale(d.visibility_score),
                                                             transparent: true,
                                                             shading: THREE.SmoothShading
                                                             } );
             var cube = new THREE.Mesh(geometry,material);
             cube.record=d.record;
             cube.name=d.name;
-            cube.score=d.score;
-            cube.label=d.label;
-            cube.scale.y = riskScale(d.score);
+            cube.risk_score=d.risk_score;
+            cube.impact_score=d.impact_score;
+            cube.visibility_score=d.visibility_score;
+            cube.scale.y = riskScale(d.risk_score);
             cube.position.y = (cube.scale.y * boxHeight)/2 ;
             cube.position.x = (gridPositions[i].x * squareSize) - boxWidth/2;
             cube.position.z = (gridPositions[i].z * squareSize) - boxDepth/2;
@@ -298,54 +290,80 @@ d3.json("risks.json", function(error, jsondata) {
         //run through the cubes and set opacity to viewable
         scene.children.forEach(function(element,index) {
             if (_.has(element,'record')) {
-                element.material.opacity=0.7;
+                element.material.opacity=visibilityScale(element.visibility_score);
             }
         });
     }
 
     mapData=function(){
         // walk the data we have chosen and setup color ranges, map key elements, etc
-        section = d3.select('#sections').property('value')
-        data = _.map(jsondata[section],function(risk) {
-            if ( section == 'services' ){
-                risk.section=section;
-                risklabel='unknown'
-                if ( risk.highest_risk_impact ){
-                    risklabel=risk.highest_risk_impact.toLowerCase().trim()
-                }
-                return {
-                name: risk.name,
-                record: risk,
-                score: Number(Number(risk.score).toFixed()),
-                label: risklabel
-                };
-            }else if (section == 'assets'){
-                risk.section=section;
-                return {
-                    name: risk.asset_identifier,
-                    record: risk,
-                    score: risk.score,
-                    label: 'unknown'
-                }
-            }else{
-                return null;
-            }
+        data = _.map(jsondata.services,function(risk) {
+                // set defaults
+                impact_score='unknown'
+                visibility_score=0;
+                risk_score=0;
+                // see if we have impact_score
+                if ( risk.impact_score ){
+                    // great!
+                    impact_score=risk.impact_score;
 
+                }else if ( risk.highest_risk_impact ){
+                    impact_score=risk.highest_risk_impact.toLowerCase().trim()
+                }
+                // see if we have a risk score
+                if ( risk.risk_score ){
+                    risk_score=risk.risk_score;
+                }else if ( risk.score ){
+                    risk_score=risk.score;
+                }
+                // see if we have a visibility score
+                if (risk.visibility_score){
+                    visibility_score=risk.visibility_score;
+                } else {
+                    // calculate it based on what we can see
+                    if ( _.has(risk,'assetgroups') ){
+                        risk.assetgroups.forEach(function(ag){
+                            visibility_score+=1;
+                            if ( _.has(ag,'assets') ){
+                                ag.assets.forEach(function(a){
+                                    visibility_score+=1;
+                                    if ( _.has(a,'indicators') ){
+                                        a.indicators.forEach(function(i){
+                                            visibility_score+=1;
+                                        })
+                                    } // end has indicators
+                                })
+                            } // end has assets
+                        })
+                    } // end has asset groups
+                } // end calc visibilty
+                // return a structure the visualization can use
+                return {
+                    name: risk.name,
+                    record: risk,
+                    risk_score: Number(Number(risk_score).toFixed()),
+                    impact_score: impact_score,
+                    visibility_score: Number(Number(visibility_score).toFixed()),
+                };
           });
         //data = _.filter(data, function(d){ return _.isObject(d)});
         // sort the data by risk score
-        data=_.sortBy(data, 'score');
+        data=_.sortBy(data, 'risk_score');
 
         // reset filters
         names=[];
         riskScores=[];
+        visibilityScores=[];
         data.forEach(function(d, i) {
 
             if ( names.indexOf(d.name)==-1) {
                 names.push(d.name);
             }
-            if ( riskScores.indexOf(d.score)==-1) {
-                riskScores.push(d.score);
+            if ( riskScores.indexOf(d.risk_score)==-1) {
+                riskScores.push(d.risk_score);
+            }
+            if ( visibilityScores.indexOf(d.visibility_score)==-1) {
+                visibilityScores.push(d.visibility_score);
             }
         });
         //reset and hook up typeahead filters
@@ -361,12 +379,16 @@ d3.json("risks.json", function(error, jsondata) {
             name: 'names',
             source: substringMatcher(names)
         });
-        //with the list of risk scores in the data,
-        //setup a d3 scale to size the boxes on the heatmap accordingly.
+        // with the list of risk scores in the data,
+        // setup a d3 scale to size the boxes on the heatmap accordingly.
         riskScale=d3.scale.linear()
             .domain([d3.min(riskScores),d3.max(riskScores)])
             .range([.5,10])
-
+        // with the list of visibility scores in the data,
+        // setup a d3 scale to size the opacity on the heatmap accordingly.
+        visibilityScale=d3.scale.linear()
+            .domain([d3.min(visibilityScores),d3.max(visibilityScores)])
+            .range([.1,1])
         resetScene();
         setupGrid();
         populateGrid();
@@ -458,9 +480,9 @@ d3.json("risks.json", function(error, jsondata) {
                 tbody=dTable.append("tbody");
                 _.pairs(target.record).forEach(function(d,i){
                     // console.log(d)
-                    // don't display null values or minutia like id, color
+                    // don't display null values or minutia like id, color or our data structure
                     // otherwise, just display key/value
-                    if ( d[1] && ! _.contains(['id','color','masked','timestamp_utc'], d[0]) ){
+                    if ( d[1] && ! _.contains(['id','color','masked','timestamp_utc', 'assetgroups'], d[0]) ){
                         var rows = tbody.append("tr");
                         var columns = rows.selectAll("td")
                             .data(d)
@@ -476,86 +498,72 @@ d3.json("risks.json", function(error, jsondata) {
                             });
                     }
                 });
-                // if section is 'service'
-                // look for a matching asset group
                 // for each asset in the asset group
                 // make a sub section for the asset details
-                if ( target.record.section == 'services' ){
-                    assetgroup = _.where(jsondata.assetgroups,{"service_id": target.record.id});
-                    console.log(assetgroup);
-                    assetgroup.forEach(function(ag){
-                        ag.assets.forEach(function(a){
-                            console.log(a);
-                            // find this asset
-                            asset=_.where(jsondata.assets,{"id": a});
-                            // for each, summarize the details
-                            asset.forEach(function(a){
-                                dTable = d3.select("#detailsLayer")
-                                .append("li")
-                                .append("table");
+                if ( _.has(target.record,'assetgroups') ) {
+                    assetgroups = target.record.assetgroups
+                    //console.log(assetgroup);
+                    assetgroups.forEach(function(ag){
+                        ag.assets.forEach(function(asset){
+                            console.log(asset);
+                            dTable = d3.select("#detailsLayer")
+                            .append("li")
+                            .append("table");
 
-                                dTable.append("thead")
-                                    .append("th")
-                                    .attr("colspan","5")
-                                    .html(a.asset_identifier);
-                            indicators = _.where(jsondata.indicators,{"asset_id": a.id});
+                            dTable.append("thead")
+                                .append("th")
+                                .attr("colspan","5")
+                                .html(asset.asset_identifier);
+                            //indicators = _.where(jsondata.indicators,{"asset_id": a.id});
                             // call function to format indicators
-                            console.log(indicators);
+                            //console.log(indicators);
+                            if ( _.has(asset,'indicators') ) {
+                                asset.indicators.forEach(function(indicator,index){
+                                    //add event_source "Mozilla Observatory" to Web compliance
+                                    if ( indicator.event_source_name == 'Mozilla Observatory' ) {
+                                        //for each host, summarize
+                                        dTable = d3.select("#detailsLayer")
+                                        .append("li")
+                                        .append("table");
 
-                            })
-                        })
+                                        dTable.append("thead")
+                                            .append("th")
+                                            .attr("colspan","5")
+                                            .html(target.record.asset_identifier + ': Grade ' + indicator.details.grade);
 
-                    });
+                                        tbody=dTable.append("tbody");
+                                        indicator.details.tests.forEach(function(detail,detail_index){
+                                            var rows = tbody.append("tr");
 
-                } // end target services
-                if ( target.record.section == 'assets' ){
-                    indicators = _.where(jsondata.indicators,{"asset_id": target.record.id});
-                    if ( indicators.length > 0 ){
-                        // console.log(indicators);
-                        indicators.forEach(function(indicator,index){
-                            //add event_source "Mozilla Observatory" to Web compliance
-                            if ( indicator.event_source_name == 'Mozilla Observatory' ) {
-                                //for each host, summarize
-                                dTable = d3.select("#detailsLayer")
-                                .append("li")
-                                .append("table");
+                                            var columns = rows.selectAll("td")
+                                                .data(_.pairs(detail))
+                                                .enter().append("td")
+                                                .html(function(d){return d[0] + ': ' + d[1];});
+                                        });
+                                    } // end Observatory
+                                    if ( indicator.event_source_name == 'scanapi' ) {
+                                        dTable = d3.select("#detailsLayer")
+                                        .append("li")
+                                        .append("table");
 
-                                dTable.append("thead")
-                                    .append("th")
-                                    .attr("colspan","5")
-                                    .html(target.record.asset_identifier + ': Grade ' + indicator.details.grade);
+                                        dTable.append("thead")
+                                            .append("th")
+                                            .attr("colspan","5")
+                                            .html(target.record.asset_identifier);
 
-                                tbody=dTable.append("tbody");
-                                indicator.details.tests.forEach(function(detail,detail_index){
-                                    var rows = tbody.append("tr");
+                                        tbody=dTable.append("tbody");
+                                        rows = tbody.append("tr");
 
-                                    var columns = rows.selectAll("td")
-                                        .data(_.pairs(detail))
-                                        .enter().append("td")
-                                        .html(function(d){return d[0] + ': ' + d[1];});
+                                        var columns = rows.selectAll("td")
+                                            .data(_.pairs(indicator.details))
+                                            .enter().append("td")
+                                            .html(function(d){return d[0] + ': ' + d[1];});
+                                    }//end scanapi
                                 });
-                            } // end Observatory
-                            if ( indicator.event_source_name == 'scanapi' ) {
-                                dTable = d3.select("#detailsLayer")
-                                .append("li")
-                                .append("table");
-
-                                dTable.append("thead")
-                                    .append("th")
-                                    .attr("colspan","5")
-                                    .html(target.record.asset_identifier);
-
-                                tbody=dTable.append("tbody");
-                                rows = tbody.append("tr");
-
-                                var columns = rows.selectAll("td")
-                                    .data(_.pairs(indicator.details))
-                                    .enter().append("td")
-                                    .html(function(d){return d[0] + ': ' + d[1];});
-                            }//end scanapi
-                        });
-                    }
-                } // end handling an asset double click
+                            } // end indicators
+                        }) //end asset
+                    });
+                } // end asset group splunking
 			} //end mouse intersected a box
 		} //end onMouseDblClick
 
@@ -625,7 +633,6 @@ d3.json("risks.json", function(error, jsondata) {
 			});
 		}
 	});
-    d3.select('#sections').on('change',mapData);
     //make it go
     animate();
     mapData();

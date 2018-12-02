@@ -476,6 +476,38 @@ d3.json("risks.json", function(error, jsondata) {
                             });
                     }
                 });
+                // if section is 'service'
+                // look for a matching asset group
+                // for each asset in the asset group
+                // make a sub section for the asset details
+                if ( target.record.section == 'services' ){
+                    assetgroup = _.where(jsondata.assetgroups,{"service_id": target.record.id});
+                    console.log(assetgroup);
+                    assetgroup.forEach(function(ag){
+                        ag.assets.forEach(function(a){
+                            console.log(a);
+                            // find this asset
+                            asset=_.where(jsondata.assets,{"id": a});
+                            // for each, summarize the details
+                            asset.forEach(function(a){
+                                dTable = d3.select("#detailsLayer")
+                                .append("li")
+                                .append("table");
+
+                                dTable.append("thead")
+                                    .append("th")
+                                    .attr("colspan","5")
+                                    .html(a.asset_identifier);
+                            indicators = _.where(jsondata.indicators,{"asset_id": a.id});
+                            // call function to format indicators
+                            console.log(indicators);
+
+                            })
+                        })
+
+                    });
+
+                } // end target services
                 if ( target.record.section == 'assets' ){
                     indicators = _.where(jsondata.indicators,{"asset_id": target.record.id});
                     if ( indicators.length > 0 ){
@@ -523,7 +555,7 @@ d3.json("risks.json", function(error, jsondata) {
                             }//end scanapi
                         });
                     }
-                }
+                } // end handling an asset double click
 			} //end mouse intersected a box
 		} //end onMouseDblClick
 

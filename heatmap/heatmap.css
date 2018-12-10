@@ -175,7 +175,7 @@ li div {
 }
 /*height of the right panel detail space */
 li h3:hover + div, li div:hover {
-    height: 200px;
+    height: 400px;
     overflow: auto;
 }
 

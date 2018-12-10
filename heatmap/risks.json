@@ -1,262 +1,182 @@
 {
-  "risks":[
-  {
-  "UsedRRAAttrib": {
-    "attribute": "reputation",
-    "impact": 3,
-    "probability": 3
-  },
-  "risk": {
-    "average": 6.6,
-    "average_label": "medium",
-    "data_classification": 3,
-    "highest_business_impact": 3,
-    "highest_business_impact_label": "high",
-    "median": 6,
-    "median_label": "medium",
-    "worst_case": 9,
-    "worst_case_label": "high"
-  },
-  "rra": {
-    "asset_groups": [
-      {
-        "assets": [
-          {
-            "asset_group_id": 107,
-            "asset_identifier": "referencehost.reference.com",
-            "asset_type": "hostname",
-            "id": 1229,
-            "indicators": [
-              {
-                "details": [
-                  {
-                    "compliance": false,
-                    "impact": "low",
-                    "name": "syslowaudit1"
-                  },
-                  {
-                    "compliance": true,
-                    "impact": "high",
-                    "name": "syshighremote1"
-                  },
-                  {
-                    "compliance": false,
-                    "impact": "medium",
-                    "name": "sysmediumconfig1"
-                  }
-                ],
-                "event_source": "MIG compliance",
-                "id": 0,
-                "likelihood_indicator": "medium",
-                "timestamp_utc": "2017-10-22T00:54:06.419538Z"
-              },
-              {
-                "details": {
-                  "coverage": true,
-                  "high": 1,
-                  "low": 8,
-                  "maximum": 0,
-                  "medium": 6
-                },
-                "event_source": "scanapi",
-                "id": 0,
-                "likelihood_indicator": "high",
-                "timestamp_utc": "2017-10-22T00:54:06.277367Z"
-              }
-            ],
-            "last_indicator": "2017-10-19T21:19:17.841799Z",
-            "owner": {
-              "id": 0,
-              "operator": "unset",
-              "team": "unset",
-              "triagekey": "unset-unset"
-            },
-            "zone": "reference"
-          },
-          {
-            "asset_group_id": 107,
-            "asset_identifier": "referencewww.reference.com",
-            "asset_type": "website",
-            "id": 1230,
-            "indicators": [
-              {
-                "details": [
-                  {
-                    "likelihood_indicator": "low",
-                    "name": "Cookie No HttpOnly Flag",
-                    "site": "referencewww.reference.com"
-                  },
-                  {
-                    "likelihood_indicator": "low",
-                    "name": "Cross-Domain Javascript Source File Inclusion",
-                    "site": "referencewww.reference.com"
-                  },
-                  {
-                    "likelihood_indicator": "medium",
-                    "name": "CSP scanner: script-src unsafe-inline",
-                    "site": "referencewww.reference.com"
-                  }
-                ],
-                "event_source": "ZAP DAST scan",
-                "id": 0,
-                "likelihood_indicator": "medium",
-                "timestamp_utc": "2017-10-22T00:54:06.347347Z"
-              },
-              {
-                "details": {
-                  "grade": "F",
-                  "tests": [
-                    {
-                      "name": "Content security policy",
-                      "pass": false
-                    },
-                    {
-                      "name": "Cookies",
-                      "pass": true
-                    },
-                    {
-                      "name": "HTTP Public Key Pinning",
-                      "pass": false
-                    },
-                    {
-                      "name": "X-Frame-Options",
-                      "pass": false
-                    },
-                    {
-                      "name": "Cross-origin Resource Sharing",
-                      "pass": true
-                    }
-                  ]
-                },
-                "event_source": "Mozilla Observatory",
-                "id": 0,
-                "likelihood_indicator": "medium",
-                "timestamp_utc": "2017-10-22T00:54:06.488283Z"
-              }
-            ],
-            "last_indicator": "2017-10-19T21:19:17.862417Z",
-            "owner": {
-              "id": 0,
-              "operator": "unset",
-              "team": "unset",
-              "triagekey": "unset-unset"
-            },
-            "zone": "reference"
-          }
-        ],
-        "id": 107,
-        "name": "reference"
-      }
-    ],
-    "availability_financial_impact": "high",
-    "availability_financial_probability": "high",
-    "availability_productivity_impact": "high",
-    "availability_productivity_probability": "high",
-    "availability_reputation_impact": "high",
-    "availability_reputation_probability": "high",
-    "confidentiality_financial_impact": "high",
-    "confidentiality_financial_probability": "high",
-    "confidentiality_productivity_impact": "high",
-    "confidentiality_productivity_probability": "high",
-    "confidentiality_reputation_impact": "high",
-    "confidentiality_reputation_probability": "high",
-    "default_data_classification": "confidential restricted",
-    "id": 310,
-    "integrity_financial_impact": "high",
-    "integrity_financial_probability": "high",
-    "integrity_productivity_impact": "high",
-    "integrity_productivity_probability": "high",
-    "integrity_reputation_impact": "high",
-    "integrity_reputation_probability": "high",
-    "lastupdated": "2017-08-02T14:25:47.511Z",
-    "name": "Reference service",
-    "rra_details": {
-      "details": {
-        "data": {
-          "default": "confidential restricted"
+    "services": [
+        {
+            "id": "31b8dc37-b3d2-4456-9a31-067c26847017",
+            "timestamp_utc": "2018-11-17T20:49:47.310148+00:00",
+            "name": "HackerRank",
+            "link": "https://docs.google.com/document/d/something",
+            "masked": false,
+            "service_owner": "Kendra Pecan",
+            "director": "Tyler Haugen",
+            "service_data_classification": "Workgroup Confidential",
+            "highest_risk_impact": "MEDIUM ",
+            "recommendations": 1,
+            "highest_recommendation": "MEDIUM",
+            "creation_date": "1/25/2018 10:46:03",
+            "modification_date": "1/30/2018 17:14:07"
         },
-        "metadata": {
-          "service": "Reference service"
-        },
-        "risk": {
-          "availability": {
-            "finances": {
-              "impact": "HIGH",
-              "probability": "HIGH"
-            },
-            "productivity": {
-              "impact": "HIGH",
-              "probability": "HIGH"
-            },
-            "reputation": {
-              "impact": "HIGH",
-              "probability": "HIGH"
-            }
-          },
-          "confidentiality": {
-            "finances": {
-              "impact": "HIGH",
-              "probability": "HIGH"
-            },
-            "productivity": {
-              "impact": "HIGH",
-              "probability": "HIGH"
-            },
-            "reputation": {
-              "impact": "HIGH",
-              "probability": "HIGH"
-            }
-          },
-          "integrity": {
-            "finances": {
-              "impact": "HIGH",
-              "probability": "HIGH"
-            },
-            "productivity": {
-              "impact": "HIGH",
-              "probability": "HIGH"
-            },
-            "reputation": {
-              "impact": "HIGH",
-              "probability": "HIGH"
-            }
-          }
+        {
+            "id": "ffe221e4-917d-4d2f-8718-8e37719bfbe9",
+            "timestamp_utc": "2018-11-17T20:49:47.310148+00:00",
+            "name": "DinoPark",
+            "link": "https://docs.google.com/document/d/somethingelse",
+            "masked": false,
+            "service_owner": "Henrik Mitsch",
+            "director": "Katharina Borchert",
+            "service_data_classification": "Individual Confidential",
+            "highest_risk_impact": "HIGH ",
+            "recommendations": 4,
+            "highest_recommendation": "HIGH",
+            "creation_date": "10/11/2018 7:57:59",
+            "modification_date": "10/29/2018 10:39:35"
         }
-      },
-      "lastmodified": "2017-08-02T14:25:47.511Z"
-    }
-  },
-  "scenarios": [
-    {
-      "impact": 3,
-      "name": "RRA derived risk for reputation",
-      "probability": 2,
-      "score": 6
-    },
-    {
-      "impact": 3,
-      "name": "MIG compliance derived risk for reputation",
-      "probability": 2,
-      "score": 6
-    },
-    {
-      "impact": 3,
-      "name": "scanapi derived risk for reputation",
-      "probability": 3,
-      "score": 9
-    },
-    {
-      "impact": 3,
-      "name": "ZAP DAST scan derived risk for reputation",
-      "probability": 2,
-      "score": 6
-    },
-    {
-      "impact": 3,
-      "name": "Mozilla Observatory derived risk for reputation",
-      "probability": 2,
-      "score": 6
-    }
-  ]
+    ],
+    "assets": [
+        {
+            "id": "14af8973-4c89-44b1-aa29-ff3082ce1e8d",
+            "asset_type": "website",
+            "asset_identifier": "addons.mozilla.org",
+            "team": null,
+            "operator": null,
+            "zone": "internet",
+            "asset_group_id": null,
+            "timestamp_utc": "2018-09-27T21:44:47.144679+00:00",
+            "description": null
+        },
+        {
+            "id": "975a8cf9-44aa-43e3-a001-c60bf011a02c",
+            "asset_type": "website",
+            "asset_identifier": "search.services.mozilla.com",
+            "team": null,
+            "operator": null,
+            "zone": "internet",
+            "asset_group_id": null,
+            "timestamp_utc": "2018-09-27T21:44:47.144679+00:00",
+            "description": null
+        }
+    ],
+    "indicators": [
+        {
+            "id": "60ead726-96d2-4407-af9c-5c86da367e77",
+            "asset_id": "975a8cf9-44aa-43e3-a001-c60bf011a02c",
+            "timestamp_utc": "2018-09-28T19:36:46.200307+00:00",
+            "description": "Mozilla Observatory scan",
+            "event_source_name": "Mozilla Observatory",
+            "likelihood_indicator": "medium",
+            "details": {
+                "grade": null,
+                "tests": [
+                    {
+                        "name": "content-security-policy",
+                        "pass": null
+                    },
+                    {
+                        "name": "contribute",
+                        "pass": false
+                    },
+                    {
+                        "name": "cookies",
+                        "pass": true
+                    },
+                    {
+                        "name": "cross-origin-resource-sharing",
+                        "pass": true
+                    },
+                    {
+                        "name": "public-key-pinning",
+                        "pass": true
+                    },
+                    {
+                        "name": "redirection",
+                        "pass": true
+                    },
+                    {
+                        "name": "referrer-policy",
+                        "pass": true
+                    },
+                    {
+                        "name": "strict-transport-security",
+                        "pass": true
+                    },
+                    {
+                        "name": "subresource-integrity",
+                        "pass": null
+                    },
+                    {
+                        "name": "x-content-type-options",
+                        "pass": false
+                    },
+                    {
+                        "name": "x-frame-options",
+                        "pass": null
+                    },
+                    {
+                        "name": "x-xss-protection",
+                        "pass": null
+                    }
+                ]
+            }
+        },
+        {
+            "id": "c996310e-9dda-4b93-aae5-6f9680e35fd9",
+            "asset_id": "14af8973-4c89-44b1-aa29-ff3082ce1e8d",
+            "timestamp_utc": "2018-09-28T19:36:46.200307+00:00",
+            "description": "Mozilla Observatory scan",
+            "event_source_name": "Mozilla Observatory",
+            "likelihood_indicator": "medium",
+            "details": {
+                "grade": "A+",
+                "tests": [
+                    {
+                        "name": "content-security-policy",
+                        "pass": true
+                    },
+                    {
+                        "name": "contribute",
+                        "pass": true
+                    },
+                    {
+                        "name": "cookies",
+                        "pass": false
+                    },
+                    {
+                        "name": "cross-origin-resource-sharing",
+                        "pass": true
+                    },
+                    {
+                        "name": "public-key-pinning",
+                        "pass": true
+                    },
+                    {
+                        "name": "redirection",
+                        "pass": true
+                    },
+                    {
+                        "name": "referrer-policy",
+                        "pass": true
+                    },
+                    {
+                        "name": "strict-transport-security",
+                        "pass": true
+                    },
+                    {
+                        "name": "subresource-integrity",
+                        "pass": false
+                    },
+                    {
+                        "name": "x-content-type-options",
+                        "pass": true
+                    },
+                    {
+                        "name": "x-frame-options",
+                        "pass": true
+                    },
+                    {
+                        "name": "x-xss-protection",
+                        "pass": true
+                    }
+                ]
+            }
+        }
+    ]
 }
-]}

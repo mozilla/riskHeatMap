@@ -1,0 +1,100 @@
+service: riskheatmap
+custom:
+  s3_risk_bucket: ${file(config.${self:provider.stage}.yml):RISKS_BUCKET_NAME}
+  s3_risk_bucket_arn: arn:aws:s3:::${self:custom.s3_risk_bucket}
+  s3_dashboard_bucket: ${file(config.${self:provider.stage}.yml):DASHBOARD_BUCKET_NAME}
+  s3_dashboard_bucket_arn: arn:aws:s3:::${self:custom.s3_dashboard_bucket}
+
+  pythonRequirements:
+    usePipenv: true
+    dockerizePip: true
+  wsgi:
+    app: app.app
+    packRequirements: false
+  customDomain:
+    domainName: ${file(config.${self:provider.stage}.yml):DOMAIN_NAME}
+    stage: ${self:provider.stage}
+    createRoute53Record: true
+    hostedZoneId:  ${file(config.${self:provider.stage}.yml):ZONE_ID}
+    certificateName: ${file(config.${self:provider.stage}.yml):CERTIFICATE_NAME}
+    endpointType: "regional"
+    enabled: true
+
+provider:
+  name: aws
+  runtime: python3.6
+  stage: ${opt:stage,'dev'}
+  region: us-west-2
+  environment:
+    ENVIRONMENT: ${self:provider.stage}
+    REGION: ${opt:region, self:provider.region}
+    CONFIGFILE: config.${self:provider.stage}.yml
+    LOGGING: "True"
+    OIDC_DOMAIN: auth.mozilla.auth0.com
+    SERVER_NAME: ${file(config.${self:provider.stage}.yml):DOMAIN_NAME}
+    PERMANENT_SESSION: "True"
+    PERMANENT_SESSION_LIFETIME: "900"
+    RISKS_BUCKET_NAME: ${file(config.${self:provider.stage}.yml):RISKS_BUCKET_NAME}
+    RISKS_KEY_NAME: ${file(config.${self:provider.stage}.yml):RISKS_KEY_NAME}
+    DASHBOARD_BUCKET_NAME: ${file(config.${self:provider.stage}.yml):DASHBOARD_BUCKET_NAME}
+    DASHBOARD_KEY_NAME: index.html
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - acm:ListCertificates
+      Resource: "*"
+    - Effect: Allow
+      Action:
+        - route53:ChangeResourceRecordSets
+        - route53:GetHostedZone
+        - route53:ListResourceRecordSets
+      Resource: "arn:aws:route53:::hostedzone/${self:custom.customDomain.hostedZoneId}"
+    - Effect: Allow
+      Action:
+        - route53:ListHostedZones
+      Resource: "*"
+    - Effect: Allow
+      Action:
+      - cloudfront:UpdateDistribution
+      Resource: "*"
+    - Effect: Allow
+      Action:
+        - apigateway:POST
+      Resource: "arn:aws:apigateway:${self:provider.region}::/domainnames"
+    - Effect: Allow
+      Action:
+        - apigateway:GET
+        - apigateway:DELETE
+      Resource: "arn:aws:apigateway:${self:provider.region}::/domainnames/*"
+    - Effect: Allow
+      Action:
+        - apigateway:POST
+      Resource: "arn:aws:apigateway:${self:provider.region}::/domainnames/*"
+    - Effect: Allow
+      Action:
+        - dynamodb:GetItem
+        - dynamodb:Query
+        - dynamodb:Scan
+      Resource: "arn:aws:dynamodb:us-east-1:*:table/credential-store"
+    - Effect: Allow
+      Action:
+        - kms:Decrypt
+      Resource: "arn:aws:kms:us-east-1:*:key/${file(config.${self:provider.stage}.yml):KMSGUID}"
+    - Effect: Allow
+      Action:
+        - s3:*
+      Resource:
+        - ${self:custom.s3_risk_bucket_arn}/*
+        - ${self:custom.s3_dashboard_bucket_arn}/*
+
+functions:
+  app:
+    handler: wsgi.handler
+    events:
+      - http: ANY /
+      - http: ANY {proxy+}
+
+plugins:
+  - serverless-python-requirements
+  - serverless-wsgi
+  - serverless-domain-manager

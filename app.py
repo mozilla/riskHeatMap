@@ -1,10 +1,8 @@
 import os
 import config
-import auth
 import logging
 import boto
 import json
-
 from flask import (
     Flask,
     redirect,
@@ -17,136 +15,57 @@ from flask import (
     jsonify
 )
 
-#flask-bootstrap
-from flask_bootstrap import Bootstrap
-#flask-secure-headers
-from flask_secure_headers.core import Secure_Headers
-#flask-pyoidc
+# flask-pyoidc
 from flask_pyoidc.flask_pyoidc import OIDCAuthentication
+from flask_pyoidc.provider_configuration import ProviderConfiguration, ClientMetadata
+from flask_pyoidc.user_session import UserSession
+# headers
+from decorators import add_response_headers
 
-#setup the app 
+# setup the app
 app = Flask(__name__)
-#app.config.from_pyfile('env.example')
-Bootstrap(app)
 
 
-#logging
+# logging
 logger = logging.getLogger(__name__)
 if os.environ.get('LOGGING') == 'True':
     logging.basicConfig(level=logging.INFO)
 
 
-#config
+# config
 logger.info("Choosing config")
-if os.environ.get('ENVIRONMENT') == 'Production':
-    # Only cloudwatch log when app is in production mode.
-    #handler = watchtower.CloudWatchLogHandler()
-    handler = logging.StreamHandler()
+if 'prod' in os.environ.get('ENVIRONMENT').lower():
     logger.info("Using production config")
-    app.logger.addHandler(handler)
     app.config.from_object(config.ProductionConfig())
 else:
     # Only log flask debug in development mode.
     logger.info("Using development config")
     logging.basicConfig(level=logging.DEBUG)
-    handler = logging.StreamHandler()
-    logging.getLogger("werkzeug").addHandler(handler)
     app.config.from_object(config.DevelopmentConfig())
 
-
-#auth = OIDCAuthentication(app,client_registration_info=client_info)
+# setup oidc
 oidc_config = config.OIDCConfig()
-
-authentication = auth.OpenIDConnect(
-    oidc_config
+auth0_Config=ProviderConfiguration(issuer='https://{}'.format(oidc_config.OIDC_DOMAIN),
+                                    client_metadata=ClientMetadata(oidc_config.OIDC_CLIENT_ID,oidc_config.OIDC_CLIENT_SECRET)
 )
-
-oidc = authentication.auth(app)
+oidc=OIDCAuthentication({'auth0':auth0_Config},app=app)
 
 #websec headers:
-sh = Secure_Headers()
-#laboratory says
-# default-src 'none';
-# connect-src 'self';
-# script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.3/jquery.min.js https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.5/js/bootstrap.min.js;
-# style-src 'unsafe-inline' https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.5/css/ 
-sh.update(
-    {
-        'CSP': {
-            'default-src': [
-                'self',
-            ],
-            'connect-src': [
-                'self',
-            ],
-            'script-src': [
-                'self',
-                'https://cdnjs.cloudflare.com/ajax/libs/jquery/1.12.4/jquery.min.js',
-                'https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js',
-                
-            ],
-            'style-src': [
-                'self',
-                'https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/',
-                
-            ],
-            'img-src': [
-                'self',
-            ],
-            'font-src': [
-                'self',
-                'fonts.googleapis.com',
-                'fonts.gstatic.com',
-            ]
-        }
-    }
-)
-
-sh.update(
-    {
-        'HSTS':
-            {
-                'max-age': 15768000,
-                'includeSubDomains': True,
-            }
-    }
-)
-
-#don't set public key pins
-sh.rewrite(
-    {
-        'HPKP': None
-    }
-)
-
-@app.route('/logout')
-@oidc.oidc_logout
-def logout():
-    return "You've been successfully logged out."
-
-@app.route('/info')
-@sh.wrapper()
-@oidc.oidc_auth
-def info():
-    """Return the JSONified user session for debugging."""
-    return jsonify(
-        id_token=session['id_token'],
-        access_token=session['access_token']
-)
+headers= {'Content-Security-Policy': ("default-src 'self'; form-action 'self'; connect-src 'self'; font-src 'self' https://fonts.gstatic.com; img-src 'self'; script-src 'self' ; style-src 'self' https://fonts.googleapis.com/;")}
 
 @app.route('/')
-@sh.wrapper()
+@add_response_headers(headers=headers)
 def main_page():
     return render_template("main_page.html")
 
 @app.route("/contribute.json")
-@sh.wrapper()
+@add_response_headers(headers=headers)
 def contribute_json():
-    return send_from_directory('heatmap/','contribute.json')
+    return send_from_directory('heatmap/','contribute.json',mimetype="application/json")
 
 @app.route("/heatmap/risks.json")
-@oidc.oidc_auth
-@sh.wrapper()
+@oidc.oidc_auth('auth0')
+@add_response_headers(headers=headers)
 def risks_json():
     conn=boto.connect_s3()
     bucket=conn.get_bucket(os.environ['RISKS_BUCKET_NAME'], validate=False)
@@ -157,14 +76,16 @@ def risks_json():
     #return(jsonify(dict(risks=list())),200)
 
 @app.route("/heatmap/<path:filename>")
-@oidc.oidc_auth
-@sh.wrapper()
+@oidc.oidc_auth('auth0')
+@add_response_headers(headers=headers)
 def heatmap_file(filename):
     return send_from_directory('heatmap/',
                                filename)
 
 @app.route("/observatory/index.html")
-@oidc.oidc_auth
+@app.route("/observatory/")
+@oidc.oidc_auth('auth0')
+@add_response_headers(headers=headers)
 def observatory_index():
     conn=boto.connect_s3()
     bucket=conn.get_bucket(os.environ['DASHBOARD_BUCKET_NAME'], validate=False)
@@ -174,11 +95,18 @@ def observatory_index():
     return(index,200)
 
 @app.route("/observatory/<path:filename>")
-@oidc.oidc_auth
+@oidc.oidc_auth('auth0')
+@add_response_headers(headers=headers)
 def observatory_file(filename):
     return send_from_directory('observatory/',
                                filename)
-       
+
+@app.route("/css/<path:filename>")
+@add_response_headers(headers=headers)
+def css_file(filename):
+    return send_from_directory('css/',
+                               filename)
+
 # We only need this for local development.
 if __name__ == '__main__':
     app.run()

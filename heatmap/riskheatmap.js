@@ -8,7 +8,7 @@ showInfoPanel = function() {
 
 clearInfoPanel = function() {
 	d3.select("#itemName").node().innerText="";
-	d3.select("#detailsLayer").select("*").remove();
+	d3.select("#detailsLayer").selectAll("*").remove();
 }
 
 // utility functions
@@ -505,7 +505,7 @@ d3.json("risks.json", function(error, jsondata) {
                     //console.log(assetgroup);
                     assetgroups.forEach(function(ag){
                         ag.assets.forEach(function(asset){
-                            console.log(asset);
+                            //console.log(asset);
                             dTable = d3.select("#detailsLayer")
                             .append("li")
                             .append("table");
@@ -529,7 +529,7 @@ d3.json("risks.json", function(error, jsondata) {
                                         dTable.append("thead")
                                             .append("th")
                                             .attr("colspan","5")
-                                            .html(target.record.asset_identifier + ': Grade ' + indicator.details.grade);
+                                            .html(asset.asset_identifier + ': Grade ' + indicator.details.grade);
 
                                         tbody=dTable.append("tbody");
                                         indicator.details.tests.forEach(function(detail,detail_index){

@@ -1,6 +1,6 @@
 DOMAIN_NAME: riskheatmap.security.allizom.org
 ZONE_ID: Z13VQZ50081YZU
-CERTIFICATE_ARN: arn:aws:acm:us-east-1:656532927350:certificate/8b9a2a12-c899-445b-b9aa-7808b6a64ab1
+CERTIFICATE_ARN: arn:aws:acm:us-west-2:656532927350:certificate/5ce0db0d-88b8-4336-83e1-b8690feb4629
 AUTH0_URL: auth-dev.mozilla.auth0.com
 AUDIENCE: https://riskheatmap.security.allizom.org/
 ENVIRONMENT: dev

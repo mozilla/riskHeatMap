@@ -1,6 +1,6 @@
 DOMAIN_NAME: riskheatmap.security.mozilla.org
 ZONE_ID: ZBALOKPGJTQW
-CERTIFICATE_NAME: 'riskheatmap.security.mozilla.org'
+CERTIFICATE_ARN: arn:aws:acm:us-west-2:371522382791:certificate/b684a800-c589-42e2-ab2a-8c5ca999d8fc
 AUTH0_URL: auth.mozilla.auth0.com
 AUDIENCE: https://riskheatmap.security.mozilla.org/
 ENVIRONMENT: prod

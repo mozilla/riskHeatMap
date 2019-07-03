@@ -105,5 +105,5 @@ Vulnerability Indicator
 
 Contacts
 --------
-Jeff Bryner <jbryner@mozilla.org>
+Jeff Bryner <jeff@jeffbryner.com>, twitter @0x7eff
 April King  <april@mozilla.org>
